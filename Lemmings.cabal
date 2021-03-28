@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c2ca5ea0b32dc3bd083945573474b2cc54ad9d1164fc20aad3982c44a074dc1e
+-- hash: d8b2197f9428b8ab9593a864c3a87020229a8da5eb10bdad66b3685f59a89f62
 
 name:           Lemmings
 version:        0.1.0.0
@@ -27,13 +27,20 @@ source-repository head
 
 library
   exposed-modules:
+      Coord
       Lib
+      Niveau
   other-modules:
       Paths_Lemmings
   hs-source-dirs:
       src
+  default-extensions: OverloadedStrings UnicodeSyntax MultiWayIf LambdaCase DuplicateRecordFields MonadComprehensions InstanceSigs
   build-depends:
       base >=4.7 && <5
+    , containers
+    , hspec
+    , random
+    , text
   default-language: Haskell2010
 
 executable Lemmings-exe
@@ -42,10 +49,15 @@ executable Lemmings-exe
       Paths_Lemmings
   hs-source-dirs:
       app
+  default-extensions: OverloadedStrings UnicodeSyntax MultiWayIf LambdaCase DuplicateRecordFields MonadComprehensions InstanceSigs
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Lemmings
     , base >=4.7 && <5
+    , containers
+    , hspec
+    , random
+    , text
   default-language: Haskell2010
 
 test-suite Lemmings-test
@@ -55,8 +67,13 @@ test-suite Lemmings-test
       Paths_Lemmings
   hs-source-dirs:
       test
+  default-extensions: OverloadedStrings UnicodeSyntax MultiWayIf LambdaCase DuplicateRecordFields MonadComprehensions InstanceSigs
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Lemmings
     , base >=4.7 && <5
+    , containers
+    , hspec
+    , random
+    , text
   default-language: Haskell2010
