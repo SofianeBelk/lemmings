@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d8b2197f9428b8ab9593a864c3a87020229a8da5eb10bdad66b3685f59a89f62
+-- hash: 8933b303b1e2058fcc1a1ffe48f6b67526e00db922165e4271195a497bbdda48
 
 name:           Lemmings
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Coord
+      Lemmings
       Lib
       Niveau
   other-modules:
