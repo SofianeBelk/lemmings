@@ -28,8 +28,8 @@ prop_bougeCoordGaucheDroite (C x y) =   bougeCoord D (bougeCoord G (C x y)) == C
 
 class Placable a where
         coordP :: a -> Coord
-        bougeP :: a -> Deplacement -> Coord
-        deplaceP :: a -> Coord -> Coord
+        bougeP :: a -> Deplacement -> a
+        deplaceP :: a -> Coord -> a 
 
 prop_placableLaw :: (Placable a , Eq a)=> a  -> Bool
 prop_placableLaw v = let (C x y) = coordP v in
