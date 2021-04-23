@@ -80,7 +80,7 @@ instance Read Niveau where
     readsPrec _ x = [(inverseNiveau(readNiveau x) ,"")]
 
 exempleNiveau :: Niveau
-exempleNiveau = read "XXXXX\nXS  X\nX   X\nX  EX\nXXXXX"
+exempleNiveau = read "XXXXXX\nX   SX\nX 000X\nX    X\nX000 X\nXE   X\nX    X\nXXXXXX"
 
 -- >>> prop_niveauEntreeSortie exempleNiveau
 -- True
@@ -107,3 +107,6 @@ passable c (Niveau _ _ cns) = Map.lookup c cns == Just Vide || Map.lookup c cns
 
 dure :: Coord -> Niveau -> Bool
 dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre
+
+getCoordEntree :: Niveau -> Coord
+getCoordEntree (Niveau _ _ cns) = Map.foldrWithKey (\c y acc -> if y == Entree then c else acc)  (C 0 0) cns

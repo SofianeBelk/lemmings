@@ -49,38 +49,31 @@ instance Placable Lemming where
 
 
 tourLemming :: Lemming -> Niveau -> Lemming
-tourLemming (Mort c) (Niveau h l cns ) =  Mort c
-tourLemming (Marcheur d (C x y) ) (Niveau h l cns ) =  if Map.lookup (C x (y+1)) cns == Just Metal || Map.lookup (C x (y+1)) cns == Just Terre then 
+tourLemming (Mort c) Niveau{} =  Mort c
+tourLemming (Marcheur d (C x y) ) niv =  if dure (C x (y-1)) niv then 
                                                             case d of
-                                                                L -> if (Map.lookup (C (x-1) y) cns == Just Vide || Map.lookup (C (x-1) y) cns == Just Entree) &&
-                                                                    (Map.lookup (C (x-1) (y+1)) cns == Just Vide || Map.lookup (C (x-1) (y+1)) cns ==  Just Entree )
-                                                                    then bougeP (Marcheur d (C x y) ) G
+                                                                L -> if passable (C (x-1) y) niv && passable (C (x-1) (y+1)) niv then
+                                                                   bougeP (Marcheur d (C x y) ) G
                                                                         else 
-                                                                            if (Map.lookup (C (x-1) y) cns == Just Metal || Map.lookup (C (x-1) y) cns == Just Terre) &&
-                                                                                (Map.lookup (C (x-1) (y+1)) cns == Just Vide || Map.lookup (C (x-1) (y+1)) cns == Just Entree) &&
-                                                                                (Map.lookup (C (x-2) (y+1)) cns == Just Vide || Map.lookup (C (x-2) (y+1)) cns == Just Entree )
-                                                                                then bougeP (Marcheur d (C x y) ) GH 
+                                                                            if passable (C (x-1) (y+1)) niv && passable (C (x-1) (y+2)) niv
+                                                                                then bougeP (Marcheur d (C x y)) GH
                                                                             else 
                                                                                 Marcheur R (C x y)
-                                                                R -> if (Map.lookup (C (x-1) y) cns == Just Vide || Map.lookup (C (x-1) y) cns == Just Entree) &&
-                                                                    (Map.lookup (C (x-1) (y+1)) cns == Just Vide || Map.lookup (C (x-1) (y+1)) cns ==  Just Entree )
-                                                                    then bougeP (Marcheur d (C x y) ) D
+                                                                R -> if passable (C (x+1) y) niv && passable (C (x+1) (y+1)) niv then
+                                                                   bougeP (Marcheur d (C x y) ) D
                                                                         else 
-                                                                            if (Map.lookup (C (x+1) y) cns == Just Metal || Map.lookup (C (x+1) y) cns == Just Terre) &&
-                                                                                (Map.lookup (C (x+1) (y+1)) cns == Just Vide || Map.lookup (C (x+1) (y+1)) cns == Just Entree) &&
-                                                                                (Map.lookup (C (x+2) (y+1)) cns == Just Vide || Map.lookup (C (x+2) (y+1)) cns == Just Entree )
-                                                                                then bougeP (Marcheur d (C x y) ) DH 
+                                                                            if passable (C (x+1) (y+1)) niv && passable (C (x+1) (y+2)) niv
+                                                                                then bougeP (Marcheur d (C x y)) DH
                                                                             else 
                                                                                 Marcheur L (C x y)
                                                        else
                                                            Tombeur d 8 (C x y)
 
-tourLemming (Tombeur d n (C x y) ) (Niveau h l cns ) = if Map.lookup (C x (y-1)) cns == Just Metal || Map.lookup (C x (y-1)) cns == Just Terre then
+tourLemming (Tombeur d n (C x y) ) niv = if dure (C x (y-1)) niv then
                                                             if n<=0 then
                                                                 Mort (C x y)
                                                             else 
                                                                 Marcheur d (C x y)
-
                                                      else
-                                                        bougeP (Tombeur d n (C x y) ) B
+                                                        bougeP (Tombeur d n (C x y)) B
 
