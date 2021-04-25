@@ -49,31 +49,39 @@ instance Placable Lemming where
 
 
 tourLemming :: Lemming -> Niveau -> Lemming
-tourLemming (Mort c) Niveau{} =  Mort c
+tourLemming (Mort c) niv =  Mort c
 tourLemming (Marcheur d (C x y) ) niv =  if dure (C x (y-1)) niv then 
                                                             case d of
                                                                 L -> if passable (C (x-1) y) niv && passable (C (x-1) (y+1)) niv then
                                                                    bougeP (Marcheur d (C x y) ) G
                                                                         else 
-                                                                            if passable (C (x-1) (y+1)) niv && passable (C (x-1) (y+2)) niv
+                                                                            if dure (C (x-1) y) niv && passable (C (x-1) (y+1)) niv && passable (C (x-1) (y+2)) niv
                                                                                 then bougeP (Marcheur d (C x y)) GH
                                                                             else 
                                                                                 Marcheur R (C x y)
                                                                 R -> if passable (C (x+1) y) niv && passable (C (x+1) (y+1)) niv then
                                                                    bougeP (Marcheur d (C x y) ) D
                                                                         else 
-                                                                            if passable (C (x+1) (y+1)) niv && passable (C (x+1) (y+2)) niv
+                                                                            if dure (C (x+1) y) niv && passable (C (x+1) (y+1)) niv && passable (C (x+1) (y+2)) niv
                                                                                 then bougeP (Marcheur d (C x y)) DH
                                                                             else 
                                                                                 Marcheur L (C x y)
-                                                       else
-                                                           Tombeur d 8 (C x y)
+                                        else
+                                                 Tombeur d 8 (C x y)
 
 tourLemming (Tombeur d n (C x y) ) niv = if dure (C x (y-1)) niv then
                                                             if n<=0 then
                                                                 Mort (C x y)
                                                             else 
                                                                 Marcheur d (C x y)
-                                                     else
+                                         else
                                                         bougeP (Tombeur d n (C x y)) B
+
+-- >>> tourLemming (Marcheur L (C 5 2)) (inverseNiveau exempleNiveau)
+-- V
+
+-- >>> bougeP (Marcheur L (C 2 2) ) GH
+
+
+
 

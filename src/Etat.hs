@@ -39,37 +39,46 @@ module Etat where
                                                         _ -> Etat niv (Map.insert id l' ls) nb nv nm ns
                                                 _ -> e
 
-    insertAt :: a -> Int -> [a] -> [a]
-    insertAt newElement 0 as = newElement:as
-    insertAt newElement i (a:as) = a : insertAt newElement (i - 1) as
+
+
+
+
+
+-- >>> replaceNth 3 2 (List.take 10 (List.repeat 1))
+-- [1,1,1,2,1,1,1,1,1,1]
 
     showEtat :: Etat -> String
     showEtat e@(Etat niv@(Niveau h l cns) ls nb nv nm ns) = case Map.lookup 1 ls of
                                                                     Just lem -> updateNiveau (show niv) l lem  0 ""
                                                                     _ -> ""
+    replaceNth :: Int -> a -> [a] -> [a]
+    replaceNth _ _ [] = []
+    replaceNth n newVal (x:xs)
+                                | n == 0 = newVal:xs
+                                | otherwise = x:replaceNth (n-1) newVal xs
+    showE :: Etat -> String
+    showE e@(Etat niv@(Niveau h l cns) ls nb nv nm ns) =
+                                                     let sn = show niv in
+                                                       Map.foldlWithKey (\acc id lem -> case lem of
+                                                                                              Mort (C x y) ->        replaceNth (l*(y-1)+x+h) (List.head (show lem))  acc
+                                                                                              Marcheur L (C x y) ->  replaceNth (l*(y-1)+x+h) (List.head (show lem))  acc
+                                                                                              Marcheur R (C x y) ->  replaceNth (l*(y-1)+x+h) (List.head (show lem))  acc
+                                                                                              Tombeur _ _ (C x y) ->  replaceNth (l*(y-1)+x+h) (List.head (show lem))  acc
+                                                                                             ) sn ls
 
-    -- let Niveau h l cns = niv in
-    --                                             let sn = show niv in
-    --                                                   Map.foldlWithKey (\acc id lem -> case lem of
-    --                                                                                          Mort (C x y) ->  insertAt '+' (l*y+x) (List.take (l*y+y+x-1) sn ++ List.drop (l*y+x) sn)
-    --                                                                                          Marcheur L (C x y) ->  insertAt '<' (l*y+x) (List.take (l*y+y+x-1) sn ++ List.drop (l*y+x) sn)
-    --                                                                                          Marcheur R (C x y) ->  insertAt '>' (l*y+x) (List.take (l*y+y+x-1) sn ++ List.drop (l*y+x) sn)
-    --                                                                                          Tombeur _ _ (C x y) ->  insertAt 'V' (l*y+x) (List.take (l*y+y+x-1) sn ++ List.drop (l*y+x) sn)
-    --                                                                                         ) sn ls
 
-                                            
     inverseEtat :: Etat -> Etat
     inverseEtat (Etat niv ls nb nv nm ns) = Etat (inverseNiveau niv) ls nb nv nm ns
 
     instance Show Etat where
-        show etat =  showEtat etat
+        show etat =  showE (inverseEtat etat)
 
     updateNiveau :: String -> Int -> Lemming -> Int -> String -> String
     updateNiveau [] _ _ _ acc = acc
     updateNiveau niv l lim i acc = case lim of
-                                    Mort (C x y) -> if (l*y+x) == i then updateNiveau (List.tail niv) l lim (i+1) (acc ++ show lim) else updateNiveau (List.tail niv) l lim (i+1) acc ++ [List.head niv]
-                                    Marcheur _ (C x y) -> if (l*y+x) == i then updateNiveau (List.tail niv) l lim (i+1) (acc ++ show lim) else updateNiveau (List.tail niv) l lim (i+1) acc ++ [List.head niv]
-                                    Tombeur _ _ (C x y) -> if (l*y+x) == i then updateNiveau (List.tail niv) l lim (i+1) (acc ++ show lim) else updateNiveau (List.tail niv) l lim (i+1) acc ++ [List.head niv]
+                                    Mort (C x y) -> if l*(y-1)+x == i then updateNiveau (List.tail niv) l lim (i+1) (acc ++ show lim) else updateNiveau (List.tail niv) l lim (i+1) acc ++ [List.head niv]
+                                    Marcheur _ (C x y) -> if l*(y-1)+x == i then updateNiveau (List.tail niv) l lim (i+1) (acc ++ show lim) else updateNiveau (List.tail niv) l lim (i+1) acc ++ [List.head niv]
+                                    Tombeur _ _ (C x y) -> if l*(y-1)+x == i then updateNiveau (List.tail niv) l lim (i+1) (acc ++ show lim) else updateNiveau (List.tail niv) l lim (i+1) acc ++ [List.head niv]
 
 
 

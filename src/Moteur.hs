@@ -54,9 +54,18 @@ module Moteur where
     transformeEtat s
         |s == Perdu = Perdu
         |s == Gagne = Gagne
-        |otherwise = let e@(Etat niv lem nb nv nm ns) = case getEtat s of Just etat -> etat in 
-                                        if nm == nb then Perdu
-                                        else if ns == nb then Gagne
-                                        else
-                                            (EnCours (Map.foldlWithKey (\er k l -> transformeLemming k er) e lem))
+        |otherwise = let e@(Etat niv lem nb nv nm ns) = case getEtat s of 
+                                                            Just etat -> etat 
+                            
+                                                        in 
+                                                            if nm == nb then 
+                                                                Perdu
+                                                            else 
+                                                                if ns == nb then 
+                                                                    Gagne
+                                                                else
+                                                                    let k =  (EnCours (Map.foldlWithKey (\er k l -> transformeLemming k er) e lem)) in
+                                                                         k
+                                                                        
+
         

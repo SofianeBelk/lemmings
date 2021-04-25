@@ -12,6 +12,16 @@ e = gameInit exempleNiveau
 main :: IO ()
 main =  do
     print e
+    (loopMain (gameLoop e))
+    (loopMain (gameLoop (gameLoop e)))
+    (loopMain (gameLoop (gameLoop (gameLoop e))))
+    (loopMain (gameLoop(gameLoop (gameLoop (gameLoop e)))))
+    (loopMain (gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e))))))
+    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e)))))))
+    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e))))))))
+    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e)))))))))
+    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e))))))))))
+    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e)))))))))))
     {- do
                 let  (EnCours etat@(Etat nv gh nb b nm ns)) =  e in
                                     loopMain e;
@@ -32,4 +42,4 @@ gameLoop Gagne = Gagne
 gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns))
     | nm == nb = Perdu
     | ns == nb = Gagne
-    | otherwise = transformeEtat s
+    | otherwise = (transformeEtat s)
