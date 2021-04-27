@@ -5,15 +5,24 @@ import Niveau
 import qualified Data.Map as Map
 
 data Direction = L | R
-                deriving(Eq, Show)
+                deriving (Show, Eq)
 
 data Lemming =  Mort Coord
               | Marcheur Direction Coord
               | Creuseur Direction Coord
               | Poseur Direction Coord
               | Tombeur Direction Int Coord
-              deriving (Eq)
-            
+              deriving Eq
+-- >>> Marcheur L (C 3 2) == Marcheur L (C 3 2)
+-- True
+
+prop_lemmingInv :: Lemming -> Bool
+prop_lemmingInv (Mort c) = prop_coordInv c
+prop_lemmingInv (Marcheur _ c) = prop_coordInv c
+prop_lemmingInv (Creuseur _ c) = prop_coordInv c
+prop_lemmingInv (Poseur _ c) = prop_coordInv c
+prop_lemmingInv (Tombeur _ n c) = prop_coordInv c && n > 0
+
 instance Show Lemming where 
     show (Mort _) = "+"
     show (Marcheur R _) = ">"
@@ -73,7 +82,6 @@ tourLemming lem@(Marcheur di (C x y) ) niv = if dure (C x (y-1)) niv then
                                                                 (Marcheur L (C x y),niv)
                                             else
                                                 (Tombeur di hauteurMax (C x y),niv)
-
 tourLemming lem@(Creuseur di (C x y)) niv@(Niveau h l cns) = if Map.lookup (C x (y-1)) cns == Just Terre then
                                                                 let niv'@(Niveau h' l' cns') = Niveau h l (Map.insert (C x (y-1)) Vide cns) in
                                                                     if Map.lookup (C (x-1) (y-1)) cns' == Just Terre then
@@ -98,7 +106,6 @@ tourLemming lem@(Poseur di (C x y)) niv@(Niveau h l cns) = case di of
                                                         R -> case Map.lookup (C (x+1) y) cns of
                                                                 Just Vide -> (lem,Niveau h l (Map.insert (C (x+1) y) Terre cns))
                                                                 _ -> (lem,niv)
-
 tourLemming (Tombeur di n (C x y)) niv =if dure (C x (y-1)) niv then
                                             if n<=0 then
                                                 (Mort (C x y),niv)

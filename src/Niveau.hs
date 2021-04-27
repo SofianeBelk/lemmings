@@ -34,13 +34,14 @@ lectureCase _= Vide
 -- "E"
 -- >>> show Sortie
 -- "S"
-
-
 data Niveau = Niveau {
     hNiveau :: Int,
     lNiveau :: Int,
     casesNiveau :: Map.Map Coord Case}
     deriving Eq
+
+prop_niveauInv :: Niveau -> Bool
+prop_niveauInv (Niveau h l cases) = h > 0 && l > 0 && not(Map.null cases)
 
 prop_niveau :: Niveau -> Bool
 prop_niveau n = prop_niveauEntreeSortie n && prop_niveauMetal n
@@ -87,10 +88,11 @@ inverseNiveau (Niveau h l cns) = Niveau h l $ Map.foldrWithKey etape Map.empty c
 instance Read Niveau where
     readsPrec _ x = [(inverseNiveau(readNiveau x) ,"")]
 
-
 exempleNiveau :: Niveau
 exempleNiveau = read "XXXXXXXXXX\nX E      X\nX        X\nX0000    X\nX        X\nX        X\nX   00000X\nX        X\nX 0000000X\nX        X\nX       SX\nXXXXXXXXXX"
 
+-- >>> prop_niveauInv exempleNiveau
+-- True
 -- >>> prop_niveauEntreeSortie exempleNiveau
 -- True
 -- >>> prop_niveauMetal exempleNiveau
@@ -111,10 +113,30 @@ coordSortie :: Niveau -> Coord
 coordSortie (Niveau _ _ cns)  =  Map.foldrWithKey (\k y acc -> if y == Sortie then k else acc)  (C 0 0) cns
 
 -- >>> coordEntree exempleNiveau
--- C 2 10
+-- (2,10)
+-- >>> coordSortie exempleNiveau
+-- (8,1)
 
 passable :: Coord -> Niveau -> Bool
 passable c (Niveau _ _ cns) = Map.lookup c cns == Just Vide || Map.lookup c cns == Just Entree || Map.lookup c cns == Just Sortie
 
+-- >>> passable (C 0 0) exempleNiveau
+-- False
+-- >>> passable (C 4 3) exempleNiveau
+-- False
+-- >>> passable (coordEntree exempleNiveau) exempleNiveau
+-- True
+-- >>> passable (coordSortie exempleNiveau) exempleNiveau
+-- True
+
 dure :: Coord -> Niveau -> Bool
 dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre
+-- >>> dure (C 0 0) exempleNiveau
+-- True
+-- >>> dure (C 4 3) exempleNiveau
+-- True
+-- >>> dure (coordEntree exempleNiveau) exempleNiveau
+-- False
+-- >>> dure (coordSortie exempleNiveau) exempleNiveau
+-- False
+

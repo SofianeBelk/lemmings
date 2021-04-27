@@ -16,14 +16,26 @@ data Etat = Etat{
     nbLemmingsSortis :: Int
 }
 
+prop_etatInv :: Etat -> Bool 
+prop_etatInv (Etat niv _ nb nv nm ns) = prop_niveauInv niv && prop_niveau niv &&
+                                            nb == (nv + nm + ns)
+
 ajouterLemming :: Lemming -> Etat -> Etat
 ajouterLemming lem (Etat niv lems nb nv nm ns) = Etat niv (Map.insert (nb+1) lem lems) (nb+1) (nv+1) nm ns
+
+prop_ajouterLemmingPost :: Lemming -> Etat -> Bool
+prop_ajouterLemmingPost lem etat@(Etat _ lems nb nv _ _) = let etat'@(Etat _ lems' nb' nv' _ _) = ajouterLemming lem etat in
+                                                                    (nb + 1) == nb' &&  (nv + 1) == nv' && Map.lookup nb' lems' == Just lem
 
 enleverLemming :: Int -> Etat -> Etat
 enleverLemming id etat@(Etat niv lems nb nv nm ns) =
     case Map.lookup id lems of
-        Just _ -> Etat niv (Map.delete id lems) nb nv nm (ns+1)
+        Just _ -> Etat niv (Map.delete id lems) nb (nv-1) nm (ns+1)
         _ -> etat
+
+prop_enleverLemmingPost :: Int -> Etat -> Bool
+prop_enleverLemmingPost i etat = let etat'@(Etat _ lems' _ _ _ _) = enleverLemming i etat in
+                                                                    Map.lookup i lems' == Nothing
 
 deplacerLemming :: Int -> Coord -> Etat -> Etat
 deplacerLemming id c etat@(Etat niv lems nb nv nm ns) =
@@ -56,7 +68,7 @@ showLemmings (Etat _ lems _ _ _ _) = Map.foldrWithKey  (\id lem acc -> case lem 
                                                                         ) "" lems
 
 showEtat :: Etat -> String
-showEtat etat@(Etat niv lems _ _ _ _)=show niv ++ "\n" ++ showLemmings etat
+showEtat etat@(Etat niv lems _ _ _ _) = show niv ++ "\n" ++ showLemmings etat
 
 instance Show Etat where
     show etat =  showEtat etat
