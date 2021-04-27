@@ -2,7 +2,7 @@ module Etat where
 
 import qualified Data.Map as Map
 import Niveau
-import Lemmings ( tourLemming, Direction(R, L), Lemming(..) )
+import Lemmings
 import Coord
 import Data.String as String
 import Data.List as List
@@ -34,14 +34,14 @@ deplacerLemming id c etat@(Etat niv lems nb nv nm ns) =
 transformeLemming :: Int -> Etat -> Etat
 transformeLemming id etat@(Etat niv lems nb nv nm ns) =
     case Map.lookup id lems of
-        Just lem -> let lem' = tourLemming lem niv in
+        Just lem -> let (lem',niv') = tourLemming lem niv in
             case lem' of
-                Mort _ -> Etat niv (Map.insert id lem' lems) nb (nv-1) (nm+1) ns
+                Mort _ -> Etat niv' (Map.insert id lem' lems) nb (nv-1) (nm+1) ns
                 Marcheur _ co -> if co == coordSortie niv then
-                                    Etat niv (Map.delete id lems) nb nv nm (ns+1)
+                                    Etat niv' (Map.delete id lems) nb nv nm (ns+1)
                                 else
-                                    Etat niv (Map.insert id lem' lems) nb nv nm ns
-                Tombeur _ _ co -> Etat niv (Map.insert id lem' lems) nb nv nm ns
+                                    Etat niv' (Map.insert id lem' lems) nb nv nm ns
+                Tombeur _ _ co -> Etat niv' (Map.insert id lem' lems) nb nv nm ns
         _ -> etat
 
 transformeEtat :: Etat -> Etat
