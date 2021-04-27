@@ -1,45 +1,29 @@
 module Main where
-
 import Moteur
 import Niveau
 import Etat
-import Data.Map ( foldlWithKey )
-
+import Data.Map
 
 e :: Situation
 e = gameInit exempleNiveau
 
 main :: IO ()
 main =  do
-    print e
-    (loopMain (gameLoop e))
-    (loopMain (gameLoop (gameLoop e)))
-    (loopMain (gameLoop (gameLoop (gameLoop e))))
-    (loopMain (gameLoop(gameLoop (gameLoop (gameLoop e)))))
-    (loopMain (gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e))))))
-    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e)))))))
-    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e))))))))
-    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e)))))))))
-    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e))))))))))
-    (loopMain (gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop(gameLoop (gameLoop (gameLoop e)))))))))))
-    {- do
-                let  (EnCours etat@(Etat nv gh nb b nm ns)) =  e in
-                                    loopMain e;
-                                    --print (foldlWithKey (\a  k  b ->  show b <> a) " " gh);
-                                    let (EnCours (Etat nvv aa nbb bb nmm nns)) =gameLoop e in
-                                    
-                                    return ()
--}
-loopMain :: Situation -> IO()
-loopMain s 
-    |show s == "Perdu" = print s
-    |show s == "Gagné" = print s
-    |otherwise = print s
+    gameLoop e 10
 
-gameLoop :: Situation -> Situation
-gameLoop Perdu = Perdu
-gameLoop Gagne = Gagne
-gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns))
-    | nm == nb = Perdu
-    | ns == nb = Gagne
-    | otherwise = (transformeEtat s)
+
+gameLoop :: Situation -> Int -> IO()
+gameLoop Perdu _ = print Perdu
+gameLoop Gagne _ = print Gagne
+gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns)) 1
+    | nm == nb = print Perdu
+    | ns == nb = print Gagne
+    | otherwise = do
+         print s
+         gameLoop (transformeSituation s) 1
+gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns)) n
+    | nm == nb = print Perdu
+    | ns == nb = print Gagne
+    | otherwise = do
+         print s
+         gameLoop (transformeSituation (introduireLemming s)) (n -1)

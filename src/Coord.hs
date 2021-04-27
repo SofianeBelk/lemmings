@@ -1,7 +1,10 @@
 module Coord where
 
 data Coord = C Int Int
-            deriving (Eq, Show)
+            deriving Eq
+
+instance Show Coord where
+        show (C x y)= "("++show x++","++show y++")"
 
 
 data Deplacement = N | G | D | H | B | GH | GB | DH | DB
@@ -25,6 +28,15 @@ instance Ord Coord where
 
 prop_bougeCoordGaucheDroite :: Coord -> Bool
 prop_bougeCoordGaucheDroite (C x y) =   bougeCoord D (bougeCoord G (C x y)) == C x y
+
+-- >>> prop_bougeCoordGaucheDroite (C 0 0)
+-- True
+
+prop_bougeCoordGaucheHaut :: Coord -> Bool
+prop_bougeCoordGaucheHaut (C x y) =   bougeCoord H (bougeCoord G (C x y)) == bougeCoord GH (C x y)
+
+-- >>> prop_bougeCoordGaucheHaut (C 0 0)
+-- True
 
 class Placable a where
         coordP :: a -> Coord

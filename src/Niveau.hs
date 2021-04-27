@@ -26,6 +26,16 @@ lectureCase "E"= Entree
 lectureCase "S"= Sortie
 lectureCase _= Vide
 
+-- >>> show Metal
+-- "X"
+-- >>> show Terre
+-- "0"
+-- >>> show Entree
+-- "E"
+-- >>> show Sortie
+-- "S"
+
+
 data Niveau = Niveau {
     hNiveau :: Int,
     lNiveau :: Int,
@@ -42,28 +52,26 @@ prop_niveauEntreeSortie (Niveau _ _ cns)  =  Map.foldrWithKey (\ _ y acc -> if y
                                              Map.foldrWithKey (\ _ y acc -> if y == Sortie then acc + 1 else acc)  0 cns == 1
 
 prop_niveauMetal :: Niveau -> Bool
-prop_niveauMetal (Niveau h l cns) = Map.foldrWithKey (\(C x y) c acc -> if x == h - 1 || y == l - 1 then acc && c == Metal else acc) True cns
+prop_niveauMetal (Niveau h l cns) = Map.foldrWithKey (\(C x y) c acc -> if x == 0 || y == 0 || x == l - 1 || y == h - 1 then acc && c == Metal else acc) True cns
 
 prop_niveauEntreeSortie2 :: Niveau -> Bool
-prop_niveauEntreeSortie2 (Niveau h l cns) = let (C xe ye) = Map.foldrWithKey (\x y acc -> if y == Entree then x else acc) (C 0 0) cns
-                                            in let (C xs ys) = Map.foldrWithKey (\x y acc -> if y == Sortie then x else acc) (C 0 0) cns
+prop_niveauEntreeSortie2 (Niveau h l cns) = let (C xe ye) = Map.foldrWithKey (\k c acc -> if c == Entree then k else acc) (C 0 0) cns
+                                            in let (C xs ys) = Map.foldrWithKey (\k c acc -> if c == Sortie then k else acc) (C 0 0) cns
                                             in Map.lookup (C xe (ye - 1)) cns == Just Vide && Map.lookup (C xs (ys - 1)) cns == Just Metal
 
-
 prop_niveauCase :: Niveau -> Bool
-prop_niveauCase (Niveau h l cns) =  let maliste = [C x y | x <- [0..(h-1)], y <- [0..(l-1)]] in
+prop_niveauCase (Niveau h l cns) =  let maliste = [C x y | x <- [0..(l-1)], y <- [0..(h-1)]] in
                                         List.foldl (\b  a  ->  case Map.lookup a cns of
                                                                      Just _ -> True
                                                                      Nothing -> False
                                                                      ) True maliste
                                         && Map.foldrWithKey (\ x y acc -> List.foldl (\ b  a -> (a == x) || b) False maliste && acc) True cns
 
-showNiveau :: Niveau -> String 
+showNiveau :: Niveau -> String
 showNiveau (Niveau h l cns) = let (s, _, _) = Map.foldl' aux ("", 0, 0) cns in s
                             where aux (s,x,y) v = if x == (l-1)
                                             then (if y == h -1 then (s ++ show v, 0, 0) else (s ++ show v ++ "\n", 0, y+1))
                                             else (s ++ show v, x+1, y)
-
 instance Show Niveau where 
   show = showNiveau
 
@@ -79,34 +87,34 @@ inverseNiveau (Niveau h l cns) = Niveau h l $ Map.foldrWithKey etape Map.empty c
 instance Read Niveau where
     readsPrec _ x = [(inverseNiveau(readNiveau x) ,"")]
 
+
 exempleNiveau :: Niveau
-exempleNiveau = read "XXXXXX\nX   SX\nX 000X\nX    X\nX000 X\nXE   X\nX    X\nXXXXXX"
+exempleNiveau = read "XXXXXXXXXX\nX E      X\nX        X\nX0000    X\nX        X\nX        X\nX   00000X\nX        X\nX 0000000X\nX        X\nX       SX\nXXXXXXXXXX"
 
 -- >>> prop_niveauEntreeSortie exempleNiveau
 -- True
-
 -- >>> prop_niveauMetal exempleNiveau
 -- True
-
 -- >>> prop_niveauEntreeSortie2 exempleNiveau
 -- True
-
 -- >>> prop_niveauCase exempleNiveau
 -- True
-
-
 -- >>> prop_niveau exempleNiveau
 -- True
-
 -- >>> show exempleNiveau
--- "XXXXX\nXS  X\nX   X\nX  EX\nXXXXX"
+-- "XXXXXXXXXX\nX E      X\nX        X\nX0000    X\nX        X\nX        X\nX   00000X\nX        X\nX 0000000X\nX        X\nX       SX\nXXXXXXXXXX"
 
+coordEntree :: Niveau -> Coord
+coordEntree (Niveau _ _ cns)  =  Map.foldrWithKey (\ k y acc -> if y == Entree then k else acc)  (C 0 0) cns
+
+coordSortie :: Niveau -> Coord
+coordSortie (Niveau _ _ cns)  =  Map.foldrWithKey (\k y acc -> if y == Sortie then k else acc)  (C 0 0) cns
+
+-- >>> coordEntree exempleNiveau
+-- C 2 10
 
 passable :: Coord -> Niveau -> Bool
-passable c (Niveau _ _ cns) = Map.lookup c cns == Just Vide || Map.lookup c cns == Just Entree
+passable c (Niveau _ _ cns) = Map.lookup c cns == Just Vide || Map.lookup c cns == Just Entree || Map.lookup c cns == Just Sortie
 
 dure :: Coord -> Niveau -> Bool
 dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre
-
-getCoordEntree :: Niveau -> Coord
-getCoordEntree (Niveau _ _ cns) = Map.foldrWithKey (\c y acc -> if y == Entree then c else acc)  (C 0 0) cns
