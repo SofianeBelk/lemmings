@@ -24,6 +24,7 @@ dependencies:
 - text
 - containers
 - random
+- sdl2
 - hspec
 
 default-extensions:
