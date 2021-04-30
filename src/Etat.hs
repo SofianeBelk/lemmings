@@ -11,7 +11,7 @@ import Data.List as List
 data Etat = Etat{
     enviE :: Envi,
     niveauE :: Niveau,
-    nbLemmings :: Int,
+    nbLemmingsRestants :: Int,
     nbLemmingsVivants :: Int,
     nbLemmingsSortis :: Int
 }
@@ -35,14 +35,39 @@ tourLemming n (Mort c) (Etat envi niv r v s) = Etat (enleveEnvi v envi) niv r (v
 
 
 
-tourLemming n (Tombeur di k (C x y)) (Etat envi niv r v s) =if dure (C x (y-1)) niv then
-                                            if n<=0 then
-                                                (Mort (C x y),niv)
-                                            else 
-                                                (Marcheur di (C x y),niv)
-                                        else
-                                            (bougeP B (Tombeur di (n-1) (C x y)),niv)
 
+-- TOURLEMMING MARCHEUR && CREUSEUR && POSEUR
+
+
+
+tourLemming n (Tombeur di k c) (Etat envi niv r v s) = case (dure (bas c) niv, n <= 0) of
+                                                        (True, True) -> Etat (appliqueIdEnv n (const (Lem n (Mort c))) envi) niv r (v-1) s
+                                                        (True, _) -> Etat (appliqueIdEnv n (const (Lem n (Marcheur di c))) envi) niv r v s
+                                                        (_, _) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c)))) envi) niv r v s
+
+
+tourEntite :: Int -> Etat -> Etat
+tourEntite n etat = case trouveIdEnvi n (enviE etat) of
+                    Nothing -> etat
+                    Just (Lem _ l) -> tourLemming n l etat
+
+popLem :: Etat -> Etat
+popLem (Etat envi niv r v s) = case coordEntree niv of
+                                Nothing -> Etat envi niv r v s
+                                Just c -> Etat nenvi niv (r-1) (v+1) s
+                                 where nenvi = addEntite nlem envi
+                                       nlem = Lem (idFrais envi) (Tombeur Droite hauteurMax c)
+
+tourEtat :: Int -> Etat -> Either Fin Etat
+tourEtat t e = (verif . pop) $ foldr etape e (entitesEnvi (enviE e))
+                where etape enti acc = tourEntite (idEnt enti) acc
+                      pop = if restants > 0 && t `mod`5 == 0 then popLem else id
+                      restants = nbLemmingsRestants e
+                      verif et = if nbLemmingsRestants et == 0 && nbLemmingsVivants et == 0
+                                    then Left $ Victoire $ nbLemmingsSortis et
+                                    else Right et
+
+                    
 {-
 tourLemming lem@(Marcheur di (C x y) ) niv = if dure (C x (y-1)) niv then
                                                 case di of

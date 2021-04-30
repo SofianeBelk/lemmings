@@ -109,11 +109,17 @@ exempleNiveau = read "XXXXXXXXXX\nX E      X\nX        X\nX0000    X\nX        X
 -- >>> show exempleNiveau
 -- "XXXXXXXXXX\nX E      X\nX        X\nX0000    X\nX        X\nX        X\nX   00000X\nX        X\nX 0000000X\nX        X\nX       SX\nXXXXXXXXXX"
 
-coordEntree :: Niveau -> Coord
-coordEntree (Niveau _ _ cns)  =  Map.foldrWithKey (\ k y acc -> if y == Entree then k else acc)  (C 0 0) cns
+coordEntree :: Niveau -> Maybe Coord
+coordEntree (Niveau _ _ cns)  =  let c = Map.foldrWithKey (\ k y acc -> if y == Entree then k else acc)  (C (-1) (-1)) cns in
+                                    case c of
+                                    C (-1) (-1) -> Nothing
+                                    _ -> Just c
 
-coordSortie :: Niveau -> Coord
-coordSortie (Niveau _ _ cns)  =  Map.foldrWithKey (\k y acc -> if y == Sortie then k else acc)  (C 0 0) cns
+coordSortie :: Niveau -> Maybe Coord
+coordSortie (Niveau _ _ cns)  =  let c = Map.foldrWithKey (\ k y acc -> if y == Sortie then k else acc)  (C (-1) (-1)) cns in
+                                    case c of
+                                    C (-1) (-1) -> Nothing
+                                    _ -> Just c
 
 -- >>> coordEntree exempleNiveau
 -- (2,10)

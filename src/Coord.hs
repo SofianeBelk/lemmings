@@ -25,15 +25,27 @@ data Deplacement = N | G | D | H | B | GH | GB | DH | DB
                    deriving (Eq, Show)
 
 bougeCoord :: Deplacement -> Coord -> Coord
-bougeCoord N (C x y) = C x y
-bougeCoord G (C x y) = C (x-1) y
-bougeCoord D (C x y) = C (x+1) y
-bougeCoord H (C x y) = C x (y+1)
-bougeCoord B (C x y) = C x (y-1)
-bougeCoord GH (C x y) = C (x-1) (y+1)
-bougeCoord GB (C x y) = C (x-1) (y-1)
-bougeCoord DH (C x y) = C (x+1) (y+1)
-bougeCoord DB (C x y) = C (x+1) (y-1)
+bougeCoord N c = c
+bougeCoord G c = gauche c
+bougeCoord D c = droite c
+bougeCoord H c = haut c
+bougeCoord B c = bas c
+bougeCoord GH c = haut (gauche c)
+bougeCoord GB c = bas (gauche c)
+bougeCoord DH c = haut (droite c)
+bougeCoord DB c = bas (droite c)
+
+bas :: Coord -> Coord
+bas (C x y) = C x (y-1)
+
+haut :: Coord -> Coord
+haut (C x y) = C x (y+1)
+
+gauche :: Coord -> Coord
+gauche (C x y) = C (x-1) y
+
+droite :: Coord -> Coord
+droite (C x y) = C (x+1) y
 
 prop_bougeCoordDroitGauche :: Coord -> Bool
 prop_bougeCoordDroitGauche (C x y) =   bougeCoord G (bougeCoord D (C x y)) == C x y
