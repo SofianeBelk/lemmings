@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 79670a8f4eac1e4a28f84071720a4c2ef321f7a30b047bbea703df48734bfd6e
+-- hash: b4fadb80388636fcbac1bb01a0ca6433c9a650e6c83b1c5cea114cb765d08df1
 
 name:           Lemmings
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Coord
+      Environnement
       Etat
       Lemmings
       Moteur
@@ -44,6 +45,7 @@ library
       base >=4.7 && <5
     , containers
     , hspec
+    , keys
     , random
     , sdl2
     , text
@@ -62,6 +64,7 @@ executable Lemmings-exe
     , base >=4.7 && <5
     , containers
     , hspec
+    , keys
     , random
     , sdl2
     , text
@@ -81,6 +84,7 @@ test-suite Lemmings-test
     , base >=4.7 && <5
     , containers
     , hspec
+    , keys
     , random
     , sdl2
     , text

@@ -40,7 +40,7 @@ data Sprite =
          , current :: Int
          , destArea :: Area }
 
-         -- | création d'un Niveau "vide"
+-- | création d'un Niveau "vide"
 createEmptySprite :: Sprite
 createEmptySprite = Sprite Seq.empty 0 (mkArea 0 0 0 0) 
 

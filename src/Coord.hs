@@ -55,23 +55,23 @@ prop_bougeCoordDroiteBas (C x y) =   bougeCoord B (bougeCoord D (C x y)) == boug
 
 class Placable a where
         coordP :: a -> Coord
-        bougeP :: a -> Deplacement -> a
-        deplaceP :: a -> Coord -> a 
+        bougeP :: Deplacement -> a -> a
+        deplaceP :: Coord -> a -> a
 
 prop_placableLaw :: (Placable a , Eq a)=> a -> Bool
 prop_placableLaw v = let (C x y) = coordP v in
-                        bougeP v G == deplaceP v (C (x-1) y)
+                        bougeP G v == deplaceP (C (x-1) y) v
                         &&
-                        bougeP v D == deplaceP v (C (x+1) y)
+                        bougeP D v == deplaceP (C (x+1) y) v
                         &&
-                        bougeP v H == deplaceP v (C x (y+1))
+                        bougeP H v == deplaceP (C x (y+1)) v
                         &&
-                        bougeP v B == deplaceP v (C x (y-1))
+                        bougeP B v == deplaceP (C x (y-1)) v
                         &&
-                        bougeP v GH == deplaceP v (C (x-1) (y+1))
+                        bougeP GH v == deplaceP (C (x-1) (y+1)) v
                         &&
-                        bougeP v GB == deplaceP v (C (x-1) (y-1))
+                        bougeP GB v == deplaceP (C (x-1) (y-1)) v
                         &&
-                        bougeP v DH == deplaceP v (C (x+1) (y+1))
+                        bougeP DH v == deplaceP (C (x+1) (y+1)) v
                         &&
-                        bougeP v DB == deplaceP v (C (x+1) (y-1))
+                        bougeP DB v == deplaceP (C (x+1) (y-1)) v

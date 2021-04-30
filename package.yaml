@@ -26,6 +26,7 @@ dependencies:
 - random
 - sdl2
 - hspec
+- keys
 
 default-extensions:
   OverloadedStrings

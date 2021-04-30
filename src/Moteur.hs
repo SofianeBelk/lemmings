@@ -7,6 +7,17 @@ import Coord
 
 data Situation = EnCours Etat | Perdu | Gagne
                      
+makeSituation :: Niveau ->Situation
+makeSituation niveau = EnCours(makeEtat niveau)
+
+gagne :: Situation -> Bool 
+gagne Gagne = True 
+gagne _ = False
+
+perdu :: Situation -> Bool 
+perdu Perdu = True 
+perdu _ = False
+
 showSituation :: Situation -> String
 showSituation Perdu = "Perdu"
 showSituation Gagne = "Gagné"
@@ -34,6 +45,10 @@ gameInit niv = let etat = etatInit niv in
 getEtat :: Situation -> Maybe Etat
 getEtat (EnCours e) = Just e
 getEtat _ = Nothing
+
+getNiveau :: Situation -> Niveau
+getNiveau (EnCours (Etat niv _ _ _ _ _)) = niv
+getNiveau _ = makeNiveau 0 0 Map.empty
 
 introduireLemming :: Situation -> Situation
 introduireLemming (EnCours etat@(Etat niv _ _ _ _ _)) = let (C x y) = coordEntree niv in

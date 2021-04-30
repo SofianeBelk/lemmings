@@ -40,6 +40,9 @@ data Niveau = Niveau {
     casesNiveau :: Map.Map Coord Case}
     deriving Eq
 
+makeNiveau :: Int -> Int -> Map.Map Coord Case -> Niveau
+makeNiveau = Niveau
+
 prop_niveauInv :: Niveau -> Bool
 prop_niveauInv (Niveau h l cases) = h > 0 && l > 0 && not(Map.null cases)
 

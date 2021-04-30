@@ -1,10 +1,17 @@
 module Main where
+import Control.Monad
+import Control.Concurrent
 import Moteur
 import Niveau
 import Etat
 import Data.Map as Map
-
+import Data.Int
+import System.Environment
 import Coord
+import Foreign.C.Types
+
+import Data.Key
+import qualified Data.Key as Key
 
 import SDL
 
@@ -46,7 +53,7 @@ loadSortie rdr path tmap smap = do
     tmap' <- TM.loadNiveau rdr path (TextureId "sortie") tmap
     let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId "sortie" ) (S.mkArea 0 0 640 480)
     let smap' = SM.addSprite (SpriteId "sortie") sprite smap
-    return (tmap', smap')-}
+    return (tmap', smap')
 loadNiveau :: Niveau -> Renderer -> TextureMap -> SpriteMap  -> IO()
 loadNiveau (Niveau l h cds) rdr tm sm = Map.foldWithKey (\(C x y) c acc -> S.displaySprite rdr tm (S.moveTo (TM.fetchTexture (show c) x y))) cds
 
@@ -93,4 +100,62 @@ gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns)) n
     | ns == nb = print Gagne
     | otherwise = do
          print s
-         gameLoop (transformeSituation (introduireLemming s)) (n -1)
+         gameLoop (transformeSituation (introduireLemming s)) (n -1)-}
+
+niveauFileParse :: [String] -> IO Niveau
+niveauFileParse [] = error "File name missing"
+niveauFileParse (file:_) = do
+    content <- readFile file
+    return (fst $ head (reads content))
+
+loadCase :: Int -> String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
+loadCase tileSize name rdr path tmap smap = do
+    tmap' <- TM.loadTexture rdr path (TextureId name) tmap
+    let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId name ) (S.mkArea 0 0 50 50)
+    let smap' = SM.addSprite (SpriteId name) sprite smap
+    return (tmap', smap')
+
+main :: IO ()
+main = do
+    args <- getArgs
+    map <- niveauFileParse args
+    let m = casesNiveau map
+    let tileSize = 50
+    let hauteur = CInt (fromIntegral (tileSize * hNiveau map + 10) :: Int32)
+    let largeur = CInt (fromIntegral (tileSize * lNiveau map) :: Int32)
+    let initEtat = makeEtat map
+    let initMoteur = makeSituation map
+    let initMoteur = introduireLemming initMoteur
+
+    initializeAll
+    window <- createWindow "Lemmings" $ defaultWindow { windowInitialSize = V2 largeur hauteur}
+    renderer <- createRenderer window (-1) defaultRenderer
+    (tmap, smap) <- loadCase tileSize "X" renderer "assets/metal.bmp" TM.createTextureMap SM.createSpriteMap
+    (tmap, smap) <- loadCase tileSize "0" renderer "assets/dirt.bmp" tmap smap
+    (tmap, smap) <- loadCase tileSize "E" renderer "assets/enter.bmp" tmap smap
+    (tmap, smap) <- loadCase tileSize " " renderer "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadCase tileSize "S" renderer "assets/exit.bmp" tmap smap
+    gameLoop (largeur, hauteur) 50 70 initMoteur renderer tmap smap 0
+    print "OK"
+
+gameLoop :: (CInt, CInt) -> Int -> a -> Situation -> Renderer -> TextureMap -> SpriteMap -> Int -> IO ()
+gameLoop dimensions tileSize frameRate situation rdr tmap smap nb_tours = do
+    startTime <- time
+
+    clear rdr
+    let map = casesNiveau $ getNiveau situation
+    let env = getEtat situation
+    let caseToSprite = (\(C x y) c -> S.displaySprite rdr tmap (S.moveTo (SM.fetchSprite (SpriteId (show (c :: Case))) smap) (fromIntegral (x*tileSize)) (fromIntegral (y*tileSize))))
+
+    let(largeur, hauteur) = dimensions
+    
+    Key.mapWithKeyM_ caseToSprite map
+    present rdr
+    {-endTime <- time
+    let refreshTime = endTime - startTime
+    let delayTime = floor (((1.0 / frameRate) - refreshTime) * 1000)
+    threadDelay $ delayTime * 1000
+    endTime <- time-}
+    let newSituation = transformeSituation situation
+    when (gagne situation || perdu situation) (print "FINI")
+    unless True (gameLoop dimensions tileSize frameRate situation rdr tmap smap nb_tours)
