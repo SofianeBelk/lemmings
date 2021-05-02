@@ -33,7 +33,7 @@ env :: Envi
 env = envide (hNiveau niv) (lNiveau niv)
 
 etat :: IO Etat
-etat = return (Etat env niv 1 0 0)
+etat = return (Etat env niv 6 0 0)
 
 main :: IO ()
 main = etat >>= lance >> return ()

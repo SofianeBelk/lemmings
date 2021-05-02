@@ -30,7 +30,7 @@ hauteurMax = 8
 
 rassembleEntNiv :: String -> String -> String
 rassembleEntNiv (x1:xs1) (x2:xs2) = if x1 == ' ' then x2:rassembleEntNiv xs1 xs2 else x1:rassembleEntNiv xs1 xs2
-rassembleEntNiv _ _ = " "
+rassembleEntNiv [] [] = ""
 
 showEtat :: Etat -> String
 showEtat e = rassembleEntNiv (show (enviE e)) (show (niveauE e))
@@ -60,7 +60,7 @@ tourLemming n (Marcheur Droite c) (Etat envi niv r m s)  = case coordSortie niv 
 tourLemming n (Tombeur di k c) (Etat envi niv r v s) = case (dure (bas c) niv, n <= 0) of
                                                         (True, True) -> Etat (appliqueIdEnv n (const (Lem n (Mort c))) envi) niv r (v-1) s
                                                         (True, _) -> Etat (appliqueIdEnv n (const (Lem n (Marcheur di c))) envi) niv r v s
-                                                        (_, _) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c)))) envi) niv r v s
+                                                        (_, _) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c)))) (deplaceDansEnvi n (bas c) envi)) niv r v s
 
 
 tourEntite :: Int -> Etat -> Etat

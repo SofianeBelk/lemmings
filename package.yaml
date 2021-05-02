@@ -27,6 +27,7 @@ dependencies:
 - sdl2
 - hspec
 - keys
+- ansi-terminal
 
 default-extensions:
   OverloadedStrings

@@ -1,7 +1,7 @@
 module Moteur where
 import qualified Data.Map as Map
 import Control.Concurrent
--- import System.Console.ANSI
+import System.Console.ANSI
 import Etat
 import Niveau
 import Lemmings
@@ -18,7 +18,7 @@ tourMoteur n e = case tourEtat n e of
                                     putStrLn ("Tour "<> show n <> " restants : "<> show (nbLemmingsRestants ne) <> ", vivants : "<> show (nbLemmingsVivants ne)<>", sortis : "<> show (nbLemmingsSortis ne))
                                     putStrLn ""
                                     threadDelay 500000
-                                   -- clearScreen
+                                    clearScreen
                                     return $ Right (n+1, ne)
 
 tourne :: Int -> Etat -> IO String 
