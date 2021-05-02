@@ -24,9 +24,34 @@ import qualified Sprite as S
 import SpriteMap
 import qualified SpriteMap as SM
 
+import Environnement
+
+niv :: Niveau
+niv = exempleNiveau
+
+env :: Envi
+env = envide (hNiveau niv) (lNiveau niv)
+
+etat :: IO Etat
+etat = return (Etat env niv 1 0 0)
+
+main :: IO ()
+main = etat >>= lance >> return ()
+
+
+
+
+
+
+
+
+
+
+
+{-
 e :: Situation
 e = gameInit exempleNiveau
-
+-}
 {-loadMetal :: Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
 loadMetal rdr path tmap smap = do
     tmap' <- TM.loadNiveau rdr path (TextureId "metal") tmap
@@ -101,7 +126,7 @@ gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns)) n
     | otherwise = do
          print s
          gameLoop (transformeSituation (introduireLemming s)) (n -1)-}
-
+{-
 niveauFileParse :: [String] -> IO Niveau
 niveauFileParse [] = error "File name missing"
 niveauFileParse (file:_) = do
@@ -159,3 +184,6 @@ gameLoop dimensions tileSize frameRate situation rdr tmap smap nb_tours = do
     let newSituation = transformeSituation situation
     when (gagne situation || perdu situation) (print "FINI")
     unless True (gameLoop dimensions tileSize frameRate situation rdr tmap smap nb_tours)
+
+
+    -}

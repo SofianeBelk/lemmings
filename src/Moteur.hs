@@ -10,7 +10,9 @@ import Coord
 
 tourMoteur :: Int -> Etat -> IO(Either Fin (Int,Etat))
 tourMoteur n e = case tourEtat n e of
-                    Left f -> return  $ Left f
+                    Left f -> do
+                                print f
+                                return  $ Left f
                     Right ne -> do
                                     print ne
                                     putStrLn ("Tour "<> show n <> " restants : "<> show (nbLemmingsRestants ne) <> ", vivants : "<> show (nbLemmingsVivants ne)<>", sortis : "<> show (nbLemmingsSortis ne))
