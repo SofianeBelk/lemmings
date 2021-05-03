@@ -9,7 +9,7 @@ import Data.String as String
 import Data.List as List
 
 data Etat = Etat{
-    enviE :: Envi,
+    enviE :: Environnement,
     niveauE :: Niveau,
     nbLemmingsRestants :: Int,
     nbLemmingsVivants :: Int,
@@ -22,6 +22,8 @@ showFin :: Fin -> String
 showFin (Victoire _) = "Victoire"
 showFin Defaite = "Defaite"
 
+makeEtat :: Niveau -> Int -> Etat
+makeEtat niv@(Niveau h l cases) n = Etat (makeEnvironnement h l) niv n 0 0
 instance Show Fin where
   show = showFin
 
@@ -45,7 +47,7 @@ tourLemming n (Marcheur Gauche c) (Etat envi niv r m s)  = case coordSortie niv 
                                                                 Nothing -> suite
                                                                 Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (m-1) (s+1) else suite
                                                                 where suite = case (passable (gauche c) niv, dure (bas c) niv) of
-                                                                                (True, True) -> Etat (deplaceDansEnvi n (gauche c) envi) niv r m s
+                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (gauche c) envi) niv r m s
                                                                                 (_, False) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur Gauche hauteurMax c))) envi) niv r m s
                                                                                 (_,_) -> Etat (appliqueIdEnv n (const (Lem n (Marcheur Droite c)))envi ) niv r m s
 
@@ -53,14 +55,14 @@ tourLemming n (Marcheur Droite c) (Etat envi niv r m s)  = case coordSortie niv 
                                                                 Nothing -> suite
                                                                 Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (m-1) (s+1) else suite
                                                                 where suite = case (passable (droite c) niv && passable (haut (droite c)) niv , dure(bas c) niv) of
-                                                                                    (True, True) -> Etat (deplaceDansEnvi n (droite c) envi) niv r m s
+                                                                                    (True, True) -> Etat (deplaceDansEnvironnement n (droite c) envi) niv r m s
                                                                                     (_,False) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur Droite hauteurMax c)))envi) niv r m s
                                                                                     (_,_) ->Etat (appliqueIdEnv n (const (Lem n (Marcheur Gauche c))) envi) niv r m s
 
 tourLemming n (Tombeur di k c) (Etat envi niv r v s) = case (dure (bas c) niv, n <= 0) of
                                                         (True, True) -> Etat (appliqueIdEnv n (const (Lem n (Mort c))) envi) niv r (v-1) s
                                                         (True, _) -> Etat (appliqueIdEnv n (const (Lem n (Marcheur di c))) envi) niv r v s
-                                                        (_, _) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c)))) (deplaceDansEnvi n (bas c) envi)) niv r v s
+                                                        (_, _) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c)))) (deplaceDansEnvironnement n (bas c) envi)) niv r v s
 
 
 tourEntite :: Int -> Etat -> Etat
@@ -68,17 +70,17 @@ tourEntite n etat = case trouveIdEnvi n (enviE etat) of
                     Nothing -> etat
                     Just (Lem _ l) -> tourLemming n l etat
 
-popLem :: Etat -> Etat
-popLem (Etat envi niv r v s) = case coordEntree niv of
+ajouterLemming :: Etat -> Etat
+ajouterLemming (Etat envi niv r v s) = case coordEntree niv of
                                 Nothing -> Etat envi niv r v s
                                 Just c -> Etat nenvi niv (r-1) (v+1) s
-                                 where nenvi = addEntite nlem envi
-                                       nlem = Lem (idFrais envi) (Tombeur Droite hauteurMax c)
+                                 where nenvi = ajouteEntite nlem envi
+                                       nlem = Lem (nouveauId envi) (Tombeur Droite hauteurMax c)
 
 tourEtat :: Int -> Etat -> Either Fin Etat
-tourEtat t e = (verif . pop) $ foldr etape e (entitesEnvi (enviE e))
-                where etape enti acc = tourEntite (idEnt enti) acc
-                      pop = if restants > 0 && t `mod`5 == 0 then popLem else id
+tourEtat t e = (verif . pop) $ foldr etape e (entitesEnvironnement (enviE e))
+                where etape enti acc = tourEntite (idEntite enti) acc
+                      pop = if restants > 0 && t `mod`5 == 0 then ajouterLemming else id
                       restants = nbLemmingsRestants e
                       verif et = if nbLemmingsRestants et == 0 && nbLemmingsVivants et == 0
                                     then Left $ Victoire $ nbLemmingsSortis et

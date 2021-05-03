@@ -9,10 +9,10 @@ import Data.Maybe as Y
 data Entite = Lem Int Lemming
     deriving Eq
 
-data Envi = Envi{ hEnvi :: Int,
-                                    lEnvi :: Int,
-                                    entitesEnvi :: S.Seq Entite,
-                                    casesEnvi :: M.Map Coord (S.Seq Entite)}
+data Environnement = Environnement{ hEnvironnement :: Int,
+                                    lEnvironnement :: Int,
+                                    entitesEnvironnement :: S.Seq Entite,
+                                    casesEnvironnement :: M.Map Coord (S.Seq Entite) }
 
 instance Show Entite where
     show (Lem _ l) = show l
@@ -22,23 +22,18 @@ instance Placable Entite where
     bougeP d (Lem i l) = Lem i $ bougeP d l
     deplaceP d (Lem i l) = Lem i $ deplaceP d l
 
-idEnt :: Entite -> Int
-idEnt (Lem i _) = i
+idEntite :: Entite -> Int
+idEntite (Lem i _) = i
 
-envide :: Int -> Int -> Envi
-envide h l = Envi h l S.empty M.empty
+makeEnvironnement :: Int -> Int -> Environnement
+makeEnvironnement h l = Environnement h l S.empty M.empty
 
-entitesEnvi2 :: Envi -> S.Seq Entite
-entitesEnvi2 (Envi h l _ cases) = M.foldl' etape S.Empty cases
-    where etape acc s = s <> acc
-
-
-trouveIdEnvi :: Int -> Envi -> Maybe Entite
-trouveIdEnvi n = trouveIdSeq n . entitesEnvi
+trouveIdEnvi :: Int -> Environnement -> Maybe Entite
+trouveIdEnvi n = trouveIdSeq n . entitesEnvironnement
 
 trouveIdSeq :: Int -> S.Seq Entite -> Maybe Entite
 trouveIdSeq n = Prelude.foldr etape Nothing
-    where etape e acc = if idEnt e == n then Just e else acc
+    where etape e acc = if idEntite e == n then Just e else acc
 
 trouveIdMap :: Int -> M.Map Coord (S.Seq Entite) -> Maybe Coord
 trouveIdMap n = M.foldrWithKey etape Nothing
@@ -46,27 +41,27 @@ trouveIdMap n = M.foldrWithKey etape Nothing
                         Nothing -> acc
                         Just _ -> Just c
 
-prop_enviInclusion1 :: Envi -> Bool
-prop_enviInclusion1 (Envi _ _ ents cases) = Prelude.foldr etape True ents
-    where etape e acc = case trouveIdMap (idEnt e) cases of
+prop_enviInclusion1 :: Environnement -> Bool
+prop_enviInclusion1 (Environnement _ _ ents cases) = Prelude.foldr etape True ents
+    where etape e acc = case trouveIdMap (idEntite e) cases of
                         Nothing -> False 
                         Just c -> c == coordP e
 
-prop_enviInclusion2 :: Envi -> Bool
-prop_enviInclusion2 (Envi _ _ ents cases) = M.foldrWithKey etape True cases
+prop_enviInclusion2 :: Environnement -> Bool
+prop_enviInclusion2 (Environnement _ _ ents cases) = M.foldrWithKey etape True cases
     where etape c s acc = Prelude.foldr (etape2 c) acc s
-            where etape2 c e acc = case trouveIdSeq (idEnt e) ents of
+            where etape2 c e acc = case trouveIdSeq (idEntite e) ents of
                             Nothing -> False
                             Just e2 -> acc && coordP e2 == c && coordP e2 == coordP e
 
-prop_envi_inv :: Envi -> Bool
+prop_envi_inv :: Environnement -> Bool
 prop_envi_inv envi = prop_enviInclusion1 envi && prop_enviInclusion2 envi
 
-instance Show Envi where
-    show = showEnvi
+instance Show Environnement where
+    show = showEnvironnement
 
-showEnvi :: Envi -> String 
-showEnvi (Envi h l _ cases) = let s = aux 0 (h-1) in s
+showEnvironnement :: Environnement -> String 
+showEnvironnement (Environnement h l _ cases) = let s = aux 0 (h-1) in s
     where aux x y = if x == (l - 1)
                         then (if y == 0 then lacase x y else lacase x y ++ "\n" ++ aux 0 (y-1))
                         else lacase x y ++ aux (x+1) y
@@ -75,19 +70,16 @@ showEnvi (Envi h l _ cases) = let s = aux 0 (h-1) in s
                             Just S.Empty -> " "
                             Just (e S.:<| es) -> show e
 
-caseVide :: Coord -> Envi -> Bool
-caseVide (C x y) (Envi h l _ cases) = (x < l) && (x >= 0) && (y < h) && (y >= 0)
-
 appliqueIdSeq :: Int -> (Entite -> Entite) -> S.Seq Entite -> S.Seq Entite
 appliqueIdSeq i f = Prelude.foldr etape S.Empty 
     where etape n acc
-            |idEnt n == i = f n S.:<| acc
+            |idEntite n == i = f n S.:<| acc
             |otherwise = n S.:<| acc
 
-appliqueIdEnv :: Int -> (Entite -> Entite) -> Envi -> Envi
-appliqueIdEnv n f envi@(Envi h l ents cases) = case trouveIdSeq n ents of
+appliqueIdEnv :: Int -> (Entite -> Entite) -> Environnement -> Environnement
+appliqueIdEnv n f envi@(Environnement h l ents cases) = case trouveIdSeq n ents of
                                                 Nothing -> error $ "appliqueIdEnv : Pas trouvé l'entité" ++ show n ++ " dans la Seq"
-                                                Just e -> Envi h l nents ncases
+                                                Just e -> Environnement h l nents ncases
                                                     where   nents = appliqueIdSeq n f ents
                                                             ncases = case trouveIdMap n cases of
                                                                         Nothing -> error $ "appliqueIdEnv : Pas trouvé l'entité" ++ show n ++ " dans la Map"
@@ -99,11 +91,11 @@ appliqueIdEnv n f envi@(Envi h l ents cases) = case trouveIdSeq n ents of
 enleveId :: Int -> S.Seq Entite -> S.Seq Entite
 enleveId i = Prelude.foldr etape S.empty 
     where etape e acc
-            | idEnt e == i = acc
+            | idEntite e == i = acc
             | otherwise  = e S.:<|acc
 
-enleveEnvi :: Int -> Envi -> Envi
-enleveEnvi n (Envi h l ents cases) = Envi h l nents ncases
+enleveEnvi :: Int -> Environnement -> Environnement
+enleveEnvi n (Environnement h l ents cases) = Environnement h l nents ncases
                                             where   nents = enleveId n ents
                                                     ncases = case trouveIdMap n cases of
                                                             Nothing -> cases
@@ -111,10 +103,10 @@ enleveEnvi n (Envi h l ents cases) = Envi h l nents ncases
                                                                                     Nothing  -> undefined 
                                                                                     Just s -> M.insert endroit (enleveId n s) cases
                                                                                     
-deplaceDansEnvi :: Int -> Coord -> Envi -> Envi
-deplaceDansEnvi n dest (Envi h l ents cases) = case trouveIdSeq n ents of
+deplaceDansEnvironnement :: Int -> Coord -> Environnement -> Environnement
+deplaceDansEnvironnement n dest (Environnement h l ents cases) = case trouveIdSeq n ents of
                                                     Nothing -> error $ "deplaceDansEnvi : Pas trouvé l'entité" ++ show n ++ " dans la Seq"
-                                                    Just e -> Envi h l nents ncases
+                                                    Just e -> Environnement h l nents ncases
                                                         where nents = appliqueIdSeq n (deplaceP dest) ents
                                                               ncases = case trouveIdMap n cases of
                                                                         Nothing ->  error $ "deplaceDansEnvi : Pas trouvé l'entité" ++ show n ++ " dans la Map"
@@ -123,12 +115,12 @@ deplaceDansEnvi n dest (Envi h l ents cases) = case trouveIdSeq n ents of
                                                                                         let ncases = M.insert source (enleveId n sents) cases in
                                                                                             M.insert dest (deplaceP dest e S.:<| dents) ncases
 
-idFrais :: Envi -> Int
-idFrais (Envi h l ents cases) = 1 + Prelude.foldr etape 0 ents
-    where etape ent = max (idEnt ent)
+nouveauId :: Environnement -> Int
+nouveauId (Environnement h l ents cases) = 1 + Prelude.foldr etape 0 ents
+    where etape ent = max (idEntite ent)
 
-addEntite :: Entite -> Envi -> Envi
-addEntite ent (Envi h l ents cases) = Envi h l nents ncases
+ajouteEntite :: Entite -> Environnement -> Environnement
+ajouteEntite ent (Environnement h l ents cases) = Environnement h l nents ncases
                                         where nents = ent S.:<| ents
                                               ncases = M.insert (coordP ent) (ent S.:<| cents) cases
                                                 where cents = Y.fromMaybe S.empty $ M.lookup (coordP ent) cases
