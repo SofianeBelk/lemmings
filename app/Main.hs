@@ -16,12 +16,15 @@ import qualified Data.Key as Key
 import Data.Maybe
 import qualified Data.Maybe as Maybe
 
+import Data.Sequence
+import qualified Data.Sequence as Seq
+
 import SDL
 
 import TextureMap
 import qualified TextureMap as TM
 
-import Sprite 
+import Sprite
 import qualified Sprite as S
 
 import SpriteMap
@@ -44,8 +47,8 @@ mapFileParse (filename:_) = do
     content <- readFile filename
     return (fst $ head (reads content))
 
-loadCase :: String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
-loadCase str rdr path tmap smap = do
+loadAsset :: String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
+loadAsset str rdr path tmap smap = do
     tmap' <- TM.loadTexture rdr path (TextureId str) tmap
     let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId str ) (S.mkArea 0 0 50 50)
     let smap' = SM.addSprite (SpriteId str) sprite smap
@@ -61,22 +64,26 @@ main = do
     let l = CInt(fromIntegral (tileSize * lNiveau niveau) :: Int32)
 
 
-    initializeAll 
-    window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 h l}
+    initializeAll
+    window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 l h}
     rdr <- createRenderer window (-1) defaultRenderer
-    (tmap, smap) <- loadCase "X" rdr "assets/metal.bmp" TM.createTextureMap SM.createSpriteMap
-    (tmap, smap) <- loadCase "0" rdr "assets/dirt.bmp" tmap smap
-    (tmap, smap) <- loadCase "E" rdr "assets/enter.bmp" tmap smap
-    (tmap, smap) <- loadCase " " rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadCase "S" rdr "assets/exit.bmp" tmap smap
-    gameLoop (l,h) 50 60 (makeEtat niveau 6) rdr tmap smap 0
+    (tmap, smap) <- loadAsset " " rdr "assets/empty.bmp" TM.createTextureMap SM.createSpriteMap
+    (tmap, smap) <- loadAsset "X" rdr "assets/metal.bmp" tmap smap
+    (tmap, smap) <- loadAsset "0" rdr "assets/dirt.bmp" tmap smap
+    (tmap, smap) <- loadAsset "E" rdr "assets/enter.bmp" tmap smap
+    (tmap, smap) <- loadAsset "S" rdr "assets/exit.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">" rdr "assets/lemming_walk_r.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<" rdr "assets/lemming_walk_l.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V" rdr "assets/lemming_fall_r.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+" rdr "assets/empty.bmp" tmap smap
+    gameLoop (l,h) tileSize 60 (makeEtat niveau 6) rdr tmap smap 0
 
 gagne :: Either Fin Etat -> Bool
 gagne e = case e of
         Left f -> case f of
                     Victoire _ -> True
                     _ -> False
-        _ -> False 
+        _ -> False
 
 perdu :: Either Fin Etat -> Bool
 perdu e = case e of
@@ -98,24 +105,46 @@ getEtat e = case e of
 
 gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Int -> IO ()
 gameLoop dimensions tileSize frameRate etat renderer tmap smap nb_tours = do
+    print etat
     startTime <- time
     clear renderer
     let map = casesNiveau $ niveauE etat
+    let lems = casesEnvironnement $ enviE etat
+
     let (width,height) = dimensions
 
-    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSize)) (fromIntegral (y*tileSize))))
+    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSize)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSize))))
+    let lemmings = (\(C x y) se -> if not (Seq.null se) then
+                                    S.displaySprite renderer tmap (S.moveTo
+                                    (SM.fetchSprite (SpriteId (show (Maybe.fromJust (Seq.lookup 0 se)))) smap)
+                                    (fromIntegral (x*tileSize)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSize)))
+                                    else
+                                        S.displaySprite renderer tmap (S.moveTo
+                                            (SM.fetchSprite (SpriteId " ") smap)
+                                                (fromIntegral (x*tileSize)) (fromIntegral((hNiveau (niveauE etat) - y)*tileSize))))
+
     Key.mapWithKeyM_ cells map
+    Key.mapWithKeyM_ lemmings lems
     present renderer
     endTime <- time
     let refreshTime = endTime - startTime
 
     let delayTime = floor (((1.0 / frameRate) - refreshTime) * 1000)
-    threadDelay $ delayTime * 1000000
+    threadDelay $ delayTime * 100000
     let newEtat = tourEtat nb_tours etat
-    let etat' = Maybe.fromJust (getEtat newEtat)
-    if gagne newEtat then print "GAGNE" else when (perdu newEtat) $ print "PERDU"
-    unless (enCours newEtat) (gameLoop dimensions tileSize frameRate etat' renderer tmap smap (nb_tours + 1))
 
+    if gagne newEtat then do
+        print "GAGNE"
+        return ()
+        else
+            if perdu newEtat then do
+                print "PERDU"
+                return ()
+                else
+                    let etat' = Maybe.fromJust (getEtat newEtat) in
+    --unless (enCours newEtat)
+                        gameLoop dimensions tileSize frameRate etat' renderer tmap smap (nb_tours + 1)
+    return ()
 
 
 -- main = etat >>= lance >> return ()
@@ -138,11 +167,11 @@ main =  do
     window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 640 480}
     renderer <- createRenderer window (-1) defaultRenderer
 
-    (t, s) <- loadCase "X" renderer "assets/metal.png" TM.createTextureMap SM.createSpriteMap
-    (t', s') <- loadCase "0" renderer "assets/dirt.png" t s
-    (t'', s'') <- loadCase "E" renderer "assets/enter.png" t' s'
-    (t''', s''') <- loadCase " " renderer "assets/empty.png" t'' s''
-    (tmap, smap) <- loadCase "S" renderer "assets/exit.png" t''' s'''
+    (t, s) <- loadAsset "X" renderer "assets/metal.png" TM.createTextureMap SM.createSpriteMap
+    (t', s') <- loadAsset "0" renderer "assets/dirt.png" t s
+    (t'', s'') <- loadAsset "E" renderer "assets/enter.png" t' s'
+    (t''', s''') <- loadAsset " " renderer "assets/empty.png" t'' s''
+    (tmap, smap) <- loadAsset "S" renderer "assets/exit.png" t''' s'''
     let (EnCours (Etat niv _ _ _ _ _)) = e in
         loadNiveau niv renderer tmap smap
 
@@ -169,8 +198,8 @@ niveauFileParse (file:_) = do
     content <- readFile file
     return (fst $ head (reads content))
 
-loadCase :: Int -> String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
-loadCase tileSize name rdr path tmap smap = do
+loadAsset :: Int -> String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
+loadAsset tileSize name rdr path tmap smap = do
     tmap' <- TM.loadTexture rdr path (TextureId name) tmap
     let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId name ) (S.mkArea 0 0 50 50)
     let smap' = SM.addSprite (SpriteId name) sprite smap
@@ -191,11 +220,11 @@ main = do
     initializeAll
     window <- createWindow "Lemmings" $ defaultWindow { windowInitialSize = V2 largeur hauteur}
     renderer <- createRenderer window (-1) defaultRenderer
-    (tmap, smap) <- loadCase tileSize "X" renderer "assets/metal.bmp" TM.createTextureMap SM.createSpriteMap
-    (tmap, smap) <- loadCase tileSize "0" renderer "assets/dirt.bmp" tmap smap
-    (tmap, smap) <- loadCase tileSize "E" renderer "assets/enter.bmp" tmap smap
-    (tmap, smap) <- loadCase tileSize " " renderer "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadCase tileSize "S" renderer "assets/exit.bmp" tmap smap
+    (tmap, smap) <- loadAsset tileSize "X" renderer "assets/metal.bmp" TM.createTextureMap SM.createSpriteMap
+    (tmap, smap) <- loadAsset tileSize "0" renderer "assets/dirt.bmp" tmap smap
+    (tmap, smap) <- loadAsset tileSize "E" renderer "assets/enter.bmp" tmap smap
+    (tmap, smap) <- loadAsset tileSize " " renderer "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset tileSize "S" renderer "assets/exit.bmp" tmap smap
     gameLoop (largeur, hauteur) 50 70 initMoteur renderer tmap smap 0
     print "OK"
 

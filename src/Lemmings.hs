@@ -42,7 +42,7 @@ instance Show Lemming where
     show (Mort _) = "+"
     show (Marcheur Droite _) = ">"
     show (Marcheur Gauche _) = "<"
-    show Creuseur {} = "X"
+    show Creuseur {} = "C"
     show Poseur {} = "P"
     show Tombeur {} = "V"
 
