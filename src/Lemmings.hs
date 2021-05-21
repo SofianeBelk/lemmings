@@ -44,7 +44,8 @@ instance Show Lemming where
     show (Marcheur Gauche _) = "<"
     show Creuseur {} = "C"
     show Poseur {} = "P"
-    show Tombeur {} = "V"
+    show (Tombeur Gauche _ _) = "V"
+    show (Tombeur Droite _ _) = "v"
 
 coordLemming :: Lemming -> Coord
 coordLemming (Mort c) = c

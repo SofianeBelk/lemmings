@@ -72,10 +72,49 @@ main = do
     (tmap, smap) <- loadAsset "0" rdr "assets/dirt.bmp" tmap smap
     (tmap, smap) <- loadAsset "E" rdr "assets/enter.bmp" tmap smap
     (tmap, smap) <- loadAsset "S" rdr "assets/exit.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">" rdr "assets/lemming_walk_r.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<" rdr "assets/lemming_walk_l.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V" rdr "assets/lemming_fall_r.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset ">" rdr "assets/lemming_walk_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">0" rdr "assets/lemming_walk_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">1" rdr "assets/lemming_walk_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">2" rdr "assets/lemming_walk_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">3" rdr "assets/lemming_walk_r/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">4" rdr "assets/lemming_walk_r/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">5" rdr "assets/lemming_walk_r/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">6" rdr "assets/lemming_walk_r/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">7" rdr "assets/lemming_walk_r/7.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "<" rdr "assets/lemming_walk_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<0" rdr "assets/lemming_walk_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<1" rdr "assets/lemming_walk_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<2" rdr "assets/lemming_walk_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<3" rdr "assets/lemming_walk_l/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<4" rdr "assets/lemming_walk_l/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<5" rdr "assets/lemming_walk_l/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<6" rdr "assets/lemming_walk_l/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<7" rdr "assets/lemming_walk_l/7.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "V" rdr "assets/lemming_fall_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V0" rdr "assets/lemming_fall_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V1" rdr "assets/lemming_fall_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V2" rdr "assets/lemming_fall_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V3" rdr "assets/lemming_fall_l/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V4" rdr "assets/lemming_fall_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V5" rdr "assets/lemming_fall_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V6" rdr "assets/lemming_fall_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V7" rdr "assets/lemming_fall_l/3.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "v" rdr "assets/lemming_fall_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v0" rdr "assets/lemming_fall_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v1" rdr "assets/lemming_fall_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v2" rdr "assets/lemming_fall_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v3" rdr "assets/lemming_fall_r/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v4" rdr "assets/lemming_fall_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v5" rdr "assets/lemming_fall_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v6" rdr "assets/lemming_fall_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v7" rdr "assets/lemming_fall_r/3.bmp" tmap smap
+
     (tmap, smap) <- loadAsset "+" rdr "assets/empty.bmp" tmap smap
+
     gameLoop (l,h) tileSize 60 (makeEtat niveau 6) rdr tmap smap 0
 
 gagne :: Either Fin Etat -> Bool
@@ -116,7 +155,7 @@ gameLoop dimensions tileSize frameRate etat renderer tmap smap nb_tours = do
     let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSize)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSize))))
     let lemmings = (\(C x y) se -> if not (Seq.null se) then
                                     S.displaySprite renderer tmap (S.moveTo
-                                    (SM.fetchSprite (SpriteId (show (Maybe.fromJust (Seq.lookup 0 se)))) smap)
+                                    (SM.fetchSprite (SpriteId (show (Maybe.fromJust (Seq.lookup 0 se)) <> show (nb_tours `mod` 8))) smap)
                                     (fromIntegral (x*tileSize)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSize)))
                                     else
                                         S.displaySprite renderer tmap (S.moveTo
