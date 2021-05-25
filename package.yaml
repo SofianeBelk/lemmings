@@ -28,7 +28,7 @@ dependencies:
 - hspec
 - keys
 - ansi-terminal
-- gloss
+- StateVar
 
 
 default-extensions:

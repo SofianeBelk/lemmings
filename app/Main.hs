@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 module Main where
 import Control.Monad
 import Control.Concurrent
@@ -10,19 +11,19 @@ import System.Environment
 import Coord
 import Foreign.C.Types
 
-
-
-
 import Data.Key
 import qualified Data.Key as Key
 
+import Data.StateVar
+
+import Environnement
 import Data.Maybe
 import qualified Data.Maybe as Maybe
 
 import Data.Sequence
 import qualified Data.Sequence as Seq
 
-import SDL 
+import SDL
 
 import Mouse (Mouse)
 import qualified Mouse as M
@@ -53,104 +54,82 @@ mapFileParse (filename:_) = do
     content <- readFile filename
     return (fst $ head (reads content))
 
-loadAsset :: String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
-loadAsset str rdr path tmap smap = do
+loadAsset :: String -> Int -> Int -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
+loadAsset str tileSizeX tileSizeY rdr path tmap smap = do
     tmap' <- TM.loadTexture rdr path (TextureId str) tmap
-    let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId str ) (S.mkArea 0 0 50 50)
+    let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId str ) (S.mkArea 0 0 (fromIntegral tileSizeX) (fromIntegral tileSizeY))
     let smap' = SM.addSprite (SpriteId str) sprite smap
     return (tmap', smap')
-
-{-updateEtat ::  IO String
-updateEtat  = do
-  ev <- SDL.waitEvent
-  case ev of
-       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonLeft  _ _))) -> return "ss0"
-       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonMiddle  _ _))) -> return "ss1"
-       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonRight  _ _))) -> return "ss2"
-       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonX1  _ _))) -> return "ss3"
-       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonX2  _ _))) -> return "ss4"
-       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ (SDL.ButtonExtra p)  _ _))) -> return "ss4"
-       _ -> return "no events" -}
-   
-      
-    -- Mouse interaction
-    {-SDL.MouseButtonUp _ _ SDL.ButtonLeft
-      -> return "sofiane mouse button up"
-    SDL.MouseButtonDown _ _ SDL.ButtonLeft
-      -> return "sofiane mouse button up"
-    SDL.MouseMotion x y _ _
-       -> return "sofiane mouse button down"-}
-
-
-    
-
 
 main :: IO ()
 main = do
     args <- getArgs
     niveau <- mapFileParse args
     let map = casesNiveau niveau
-    let tileSize = 50
-    let h = CInt(fromIntegral (tileSize * (hNiveau niveau+1)) :: Int32)
-    let l = CInt(fromIntegral (tileSize * lNiveau niveau) :: Int32)
-
 
     initializeAll
-    window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 l h}
-   
+    window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 500 500}
+    SDL.setWindowMode window SDL.FullscreenDesktop
+
+    V2 xw yw <- get (windowSize window)
+
+    let tileSizeX = fromIntegral xw `div` lNiveau niveau
+    let tileSizeY = fromIntegral yw `div` hNiveau niveau
+    let h = CInt(fromIntegral (tileSizeY * hNiveau niveau) :: Int32)
+    let l = CInt(fromIntegral (tileSizeX * lNiveau niveau) :: Int32)
 
     rdr <- createRenderer window (-1) defaultRenderer
-    (tmap, smap) <- loadAsset " " rdr "assets/empty.bmp" TM.createTextureMap SM.createSpriteMap
-    (tmap, smap) <- loadAsset "X" rdr "assets/metal.bmp" tmap smap
-    (tmap, smap) <- loadAsset "0" rdr "assets/dirt.bmp" tmap smap
-    (tmap, smap) <- loadAsset "E" rdr "assets/enter.bmp" tmap smap
-    (tmap, smap) <- loadAsset "S" rdr "assets/exit.bmp" tmap smap
+    (tmap, smap) <- loadAsset " " tileSizeX tileSizeY rdr "assets/empty.bmp" TM.createTextureMap SM.createSpriteMap
+    (tmap, smap) <- loadAsset "X" tileSizeX tileSizeY rdr "assets/metal.bmp" tmap smap
+    (tmap, smap) <- loadAsset "0" tileSizeX tileSizeY rdr "assets/dirt.bmp" tmap smap
+    (tmap, smap) <- loadAsset "E" tileSizeX tileSizeY rdr "assets/enter.bmp" tmap smap
+    (tmap, smap) <- loadAsset "S" tileSizeX tileSizeY rdr "assets/exit.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset ">" rdr "assets/lemming_walk_r/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">0" rdr "assets/lemming_walk_r/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">1" rdr "assets/lemming_walk_r/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">2" rdr "assets/lemming_walk_r/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">3" rdr "assets/lemming_walk_r/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">4" rdr "assets/lemming_walk_r/4.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">5" rdr "assets/lemming_walk_r/5.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">6" rdr "assets/lemming_walk_r/6.bmp" tmap smap
-    (tmap, smap) <- loadAsset ">7" rdr "assets/lemming_walk_r/7.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">" tileSizeX tileSizeY rdr "assets/lemming_walk_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">0" tileSizeX tileSizeY rdr "assets/lemming_walk_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">1" tileSizeX tileSizeY rdr "assets/lemming_walk_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">2" tileSizeX tileSizeY rdr "assets/lemming_walk_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">3" tileSizeX tileSizeY rdr "assets/lemming_walk_r/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">4" tileSizeX tileSizeY rdr "assets/lemming_walk_r/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">5" tileSizeX tileSizeY rdr "assets/lemming_walk_r/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">6" tileSizeX tileSizeY rdr "assets/lemming_walk_r/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">7" tileSizeX tileSizeY rdr "assets/lemming_walk_r/7.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "<" rdr "assets/lemming_walk_l/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<0" rdr "assets/lemming_walk_l/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<1" rdr "assets/lemming_walk_l/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<2" rdr "assets/lemming_walk_l/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<3" rdr "assets/lemming_walk_l/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<4" rdr "assets/lemming_walk_l/4.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<5" rdr "assets/lemming_walk_l/5.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<6" rdr "assets/lemming_walk_l/6.bmp" tmap smap
-    (tmap, smap) <- loadAsset "<7" rdr "assets/lemming_walk_l/7.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<" tileSizeX tileSizeY rdr "assets/lemming_walk_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<0" tileSizeX tileSizeY rdr "assets/lemming_walk_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<1" tileSizeX tileSizeY rdr "assets/lemming_walk_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<2" tileSizeX tileSizeY rdr "assets/lemming_walk_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<3" tileSizeX tileSizeY rdr "assets/lemming_walk_l/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<4" tileSizeX tileSizeY rdr "assets/lemming_walk_l/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<5" tileSizeX tileSizeY rdr "assets/lemming_walk_l/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<6" tileSizeX tileSizeY rdr "assets/lemming_walk_l/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<7" tileSizeX tileSizeY rdr "assets/lemming_walk_l/7.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "V" rdr "assets/lemming_fall_l/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V0" rdr "assets/lemming_fall_l/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V1" rdr "assets/lemming_fall_l/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V2" rdr "assets/lemming_fall_l/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V3" rdr "assets/lemming_fall_l/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V4" rdr "assets/lemming_fall_l/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V5" rdr "assets/lemming_fall_l/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V6" rdr "assets/lemming_fall_l/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V7" rdr "assets/lemming_fall_l/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V" tileSizeX tileSizeY rdr "assets/lemming_fall_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V0" tileSizeX tileSizeY rdr "assets/lemming_fall_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V1" tileSizeX tileSizeY rdr "assets/lemming_fall_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V2" tileSizeX tileSizeY rdr "assets/lemming_fall_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V3" tileSizeX tileSizeY rdr "assets/lemming_fall_l/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V4" tileSizeX tileSizeY rdr "assets/lemming_fall_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V5" tileSizeX tileSizeY rdr "assets/lemming_fall_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V6" tileSizeX tileSizeY rdr "assets/lemming_fall_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V7" tileSizeX tileSizeY rdr "assets/lemming_fall_l/3.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "v" rdr "assets/lemming_fall_r/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v0" rdr "assets/lemming_fall_r/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v1" rdr "assets/lemming_fall_r/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v2" rdr "assets/lemming_fall_r/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v3" rdr "assets/lemming_fall_r/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v4" rdr "assets/lemming_fall_r/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v5" rdr "assets/lemming_fall_r/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v6" rdr "assets/lemming_fall_r/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v7" rdr "assets/lemming_fall_r/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v" tileSizeX tileSizeY rdr "assets/lemming_fall_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v0" tileSizeX tileSizeY rdr "assets/lemming_fall_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v1" tileSizeX tileSizeY rdr "assets/lemming_fall_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v2" tileSizeX tileSizeY rdr "assets/lemming_fall_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v3" tileSizeX tileSizeY rdr "assets/lemming_fall_r/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v4" tileSizeX tileSizeY rdr "assets/lemming_fall_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v5" tileSizeX tileSizeY rdr "assets/lemming_fall_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v6" tileSizeX tileSizeY rdr "assets/lemming_fall_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v7" tileSizeX tileSizeY rdr "assets/lemming_fall_r/3.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "+" rdr "assets/empty.bmp" tmap smap
-    
-  
+    (tmap, smap) <- loadAsset "+" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+
+
     let ms = M.createMouse
-    gameLoop (l,h) tileSize 60 (makeEtat niveau 6) rdr tmap  smap ms 0
+    gameLoop (l,h) (-1) tileSizeX tileSizeY 60 (makeEtat niveau 6) rdr tmap  smap ms 0
 
 gagne :: Either Fin Etat -> Bool
 gagne e = case e of
@@ -177,9 +156,10 @@ getEtat e = case e of
                 Left f -> Nothing
 
 
-gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Int -> IO ()
-gameLoop dimensions tileSize frameRate etat renderer tmap smap ms nb_tours = do
-    print etat
+gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> Int -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Int -> IO ()
+gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap smap ms nb_tours = do
+    -- print etat
+    print clickedLem
     startTime <- time
     events <- pollEvents
     let ms' = M.handleEvents events ms
@@ -189,17 +169,18 @@ gameLoop dimensions tileSize frameRate etat renderer tmap smap ms nb_tours = do
 
     let (width,height) = dimensions
 
-    
 
-    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSize)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSize))))
+
+    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSizeY))))
     let lemmings = (\(C x y) se -> if not (Seq.null se) then
                                     S.displaySprite renderer tmap (S.moveTo
                                     (SM.fetchSprite (SpriteId (show (Maybe.fromJust (Seq.lookup 0 se)) <> show (nb_tours `mod` 8))) smap)
-                                    (fromIntegral (x*tileSize)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSize)))
+                                    (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSizeY)))
                                     else
                                         S.displaySprite renderer tmap (S.moveTo
                                             (SM.fetchSprite (SpriteId " ") smap)
-                                                (fromIntegral (x*tileSize)) (fromIntegral((hNiveau (niveauE etat) - y)*tileSize))))
+                                                (fromIntegral (x*tileSizeX)) (fromIntegral((hNiveau (niveauE etat) - y)*tileSizeY))))
+
 
     Key.mapWithKeyM_ cells map
     Key.mapWithKeyM_ lemmings lems
@@ -211,124 +192,34 @@ gameLoop dimensions tileSize frameRate etat renderer tmap smap ms nb_tours = do
     threadDelay $ delayTime * 25000
     let newEtat = tourEtat nb_tours etat
     SDL.P (SDL.V2 x y) <- getAbsoluteMouseLocation
-    unless (not (M.mousepressed (fromIntegral x, fromIntegral y) ms')) (print "hey hey")
-
-    if gagne newEtat then do
-        print "GAGNE"
-        return ()
-        else
-            if perdu newEtat then do
-                print "PERDU"
-                return ()
-                else
-                    let etat' = Maybe.fromJust (getEtat newEtat) in
-    --unless (enCours newEtat)
-                        gameLoop dimensions tileSize frameRate etat' renderer tmap smap ms' (nb_tours + 1)
-    return ()
-
-
--- main = etat >>= lance >> return ()
-
-
-
-
-{-
-
-loadLemming :: String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
-loadLemming lem rdr path tmap smap = do
-  tmap' <- TM.loadTexture rdr path (TextureId lem) tmap
-  let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId lem) (S.mkArea 0 0 100 100)
-  let smap' = SM.addSprite (SpriteId lem) sprite smap
-  return (tmap', smap')
-
-main :: IO ()
-main =  do
-    initializeAll
-    window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 640 480}
-    renderer <- createRenderer window (-1) defaultRenderer
-
-    (t, s) <- loadAsset "X" renderer "assets/metal.png" TM.createTextureMap SM.createSpriteMap
-    (t', s') <- loadAsset "0" renderer "assets/dirt.png" t s
-    (t'', s'') <- loadAsset "E" renderer "assets/enter.png" t' s'
-    (t''', s''') <- loadAsset " " renderer "assets/empty.png" t'' s''
-    (tmap, smap) <- loadAsset "S" renderer "assets/exit.png" t''' s'''
-    let (EnCours (Etat niv _ _ _ _ _)) = e in
-        loadNiveau niv renderer tmap smap
-
-
-gameLoop :: Situation -> Int -> IO()
-gameLoop Perdu _ = print Perdu
-gameLoop Gagne _ = print Gagne
-gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns)) 1
-    | nm == nb = print Perdu
-    | ns == nb = print Gagne
-    | otherwise = do
-         print s
-         gameLoop (transformeSituation s) 1
-gameLoop s@(EnCours e@(Etat _ _ nb _ nm ns)) n
-    | nm == nb = print Perdu
-    | ns == nb = print Gagne
-    | otherwise = do
-         print s
-         gameLoop (transformeSituation (introduireLemming s)) (n -1)-}
-{-
-niveauFileParse :: [String] -> IO Niveau
-niveauFileParse [] = error "File name missing"
-niveauFileParse (file:_) = do
-    content <- readFile file
-    return (fst $ head (reads content))
-
-loadAsset :: Int -> String -> Renderer -> FilePath -> TextureMap -> SpriteMap -> IO (TextureMap, SpriteMap)
-loadAsset tileSize name rdr path tmap smap = do
-    tmap' <- TM.loadTexture rdr path (TextureId name) tmap
-    let sprite = S.defaultScale $ S.addImage S.createEmptySprite $ S.createImage (TextureId name ) (S.mkArea 0 0 50 50)
-    let smap' = SM.addSprite (SpriteId name) sprite smap
-    return (tmap', smap')
-
-main :: IO ()
-main = do
-    args <- getArgs
-    map <- niveauFileParse args
-    let m = casesNiveau map
-    let tileSize = 50
-    let hauteur = CInt (fromIntegral (tileSize * hNiveau map + 10) :: Int32)
-    let largeur = CInt (fromIntegral (tileSize * lNiveau map) :: Int32)
-    let initEtat = makeEtat map
-    let initMoteur = makeSituation map
-    let initMoteur = introduireLemming initMoteur
-
-    initializeAll
-    window <- createWindow "Lemmings" $ defaultWindow { windowInitialSize = V2 largeur hauteur}
-    renderer <- createRenderer window (-1) defaultRenderer
-    (tmap, smap) <- loadAsset tileSize "X" renderer "assets/metal.bmp" TM.createTextureMap SM.createSpriteMap
-    (tmap, smap) <- loadAsset tileSize "0" renderer "assets/dirt.bmp" tmap smap
-    (tmap, smap) <- loadAsset tileSize "E" renderer "assets/enter.bmp" tmap smap
-    (tmap, smap) <- loadAsset tileSize " " renderer "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset tileSize "S" renderer "assets/exit.bmp" tmap smap
-    gameLoop (largeur, hauteur) 50 70 initMoteur renderer tmap smap 0
-    print "OK"
-
-gameLoop :: (CInt, CInt) -> Int -> a -> Situation -> Renderer -> TextureMap -> SpriteMap -> Int -> IO ()
-gameLoop dimensions tileSize frameRate situation rdr tmap smap nb_tours = do
-    startTime <- time
-
-    clear rdr
-    let map = casesNiveau $ getNiveau situation
-    let env = getEtat situation
-    let caseToSprite = (\(C x y) c -> S.displaySprite rdr tmap (S.moveTo (SM.fetchSprite (SpriteId (show (c :: Case))) smap) (fromIntegral (x*tileSize)) (fromIntegral (y*tileSize))))
-
-    let(largeur, hauteur) = dimensions
-    
-    Key.mapWithKeyM_ caseToSprite map
-    present rdr
-    {-endTime <- time
-    let refreshTime = endTime - startTime
-    let delayTime = floor (((1.0 / frameRate) - refreshTime) * 1000)
-    threadDelay $ delayTime * 1000
-    endTime <- time-}
-    let newSituation = transformeSituation situation
-    when (gagne situation || perdu situation) (print "FINI")
-    unless True (gameLoop dimensions tileSize frameRate situation rdr tmap smap nb_tours)
-
-
-    -}
+    when (M.mousepressed (fromIntegral x, fromIntegral y) ms') (let res = Map.lookup (C (fromIntegral x `div`tileSizeX) ((fromIntegral height - fromIntegral y) `div`tileSizeY + 1)) (casesEnvironnement (enviE etat)) in
+                                                                 let clickedLem' = case res of
+                                                                                        Just s -> case Seq.lookup 0 s of
+                                                                                            Just (Lem id l) -> id
+                                                                                            Nothing -> (-1)
+                                                                                        Nothing -> (-1)
+                                                                in
+                                                                        if gagne newEtat then do
+                                                                            print "GAGNE"
+                                                                            return ()
+                                                                            else
+                                                                                if perdu newEtat then do
+                                                                                    print "PERDU"
+                                                                                    return ()
+                                                                                    else
+                                                                                        let etat' = Maybe.fromJust (getEtat newEtat) in
+                                                                                            gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
+                                                                )
+    -- print (coordEntree (niveauE etat)
+    unless (M.mousepressed (fromIntegral x, fromIntegral y) ms') (
+        if gagne newEtat then do
+            print "GAGNE"
+            return ()
+            else
+                if perdu newEtat then do
+                    print "PERDU"
+                    return ()
+                    else
+                        let etat' = Maybe.fromJust (getEtat newEtat) in
+                            gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
+                )

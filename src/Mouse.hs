@@ -19,11 +19,11 @@ handleEvent :: Event -> Mouse -> Mouse
 handleEvent event m =
   case eventPayload event of
     MouseButtonEvent ms ->
-      let SDL.P (SDL.V2 x y) = SDL.mouseButtonEventPos ms in 
-        if mouseButtonEventMotion ms == Pressed then 
+      let SDL.P (SDL.V2 x y) = SDL.mouseButtonEventPos ms in
+        if mouseButtonEventMotion ms == Pressed then
                 S.insert  (fromIntegral x, fromIntegral y)  m
-        else 
-            if mouseButtonEventMotion ms == Released then 
+        else
+            if mouseButtonEventMotion ms == Released then
                 S.delete (fromIntegral x, fromIntegral y)  m
            else m
     _ -> m
@@ -35,5 +35,5 @@ handleEvents events kbd = foldl' (flip handleEvent) kbd events
 -- | Vérifies sir le *keycode* spécificé est actuellement
 -- | actif sur le clavier.
 mousepressed :: (Integer, Integer) -> Mouse -> Bool
-mousepressed kc kbd = S.member kc kbd
+mousepressed = S.member
 
