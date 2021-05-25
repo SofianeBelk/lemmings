@@ -85,3 +85,5 @@ tourEtat t e = (verif . pop) $ foldr etape e (entitesEnvironnement (enviE e))
                       verif et = if nbLemmingsRestants et == 0 && nbLemmingsVivants et == 0
                                     then Left $ Victoire $ nbLemmingsSortis et
                                     else Right et
+
+                              

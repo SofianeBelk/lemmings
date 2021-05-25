@@ -10,6 +10,9 @@ import System.Environment
 import Coord
 import Foreign.C.Types
 
+
+
+
 import Data.Key
 import qualified Data.Key as Key
 
@@ -19,7 +22,10 @@ import qualified Data.Maybe as Maybe
 import Data.Sequence
 import qualified Data.Sequence as Seq
 
-import SDL
+import SDL 
+
+import Mouse (Mouse)
+import qualified Mouse as M
 
 import TextureMap
 import qualified TextureMap as TM
@@ -54,6 +60,31 @@ loadAsset str rdr path tmap smap = do
     let smap' = SM.addSprite (SpriteId str) sprite smap
     return (tmap', smap')
 
+{-updateEtat ::  IO String
+updateEtat  = do
+  ev <- SDL.waitEvent
+  case ev of
+       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonLeft  _ _))) -> return "ss0"
+       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonMiddle  _ _))) -> return "ss1"
+       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonRight  _ _))) -> return "ss2"
+       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonX1  _ _))) -> return "ss3"
+       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ SDL.ButtonX2  _ _))) -> return "ss4"
+       (SDL.Event m (SDL.MouseButtonEvent (MouseButtonEventData _ _ _ (SDL.ButtonExtra p)  _ _))) -> return "ss4"
+       _ -> return "no events" -}
+   
+      
+    -- Mouse interaction
+    {-SDL.MouseButtonUp _ _ SDL.ButtonLeft
+      -> return "sofiane mouse button up"
+    SDL.MouseButtonDown _ _ SDL.ButtonLeft
+      -> return "sofiane mouse button up"
+    SDL.MouseMotion x y _ _
+       -> return "sofiane mouse button down"-}
+
+
+    
+
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -66,6 +97,8 @@ main = do
 
     initializeAll
     window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 l h}
+   
+
     rdr <- createRenderer window (-1) defaultRenderer
     (tmap, smap) <- loadAsset " " rdr "assets/empty.bmp" TM.createTextureMap SM.createSpriteMap
     (tmap, smap) <- loadAsset "X" rdr "assets/metal.bmp" tmap smap
@@ -114,8 +147,10 @@ main = do
     (tmap, smap) <- loadAsset "v7" rdr "assets/lemming_fall_r/3.bmp" tmap smap
 
     (tmap, smap) <- loadAsset "+" rdr "assets/empty.bmp" tmap smap
-
-    gameLoop (l,h) tileSize 60 (makeEtat niveau 6) rdr tmap smap 0
+    
+  
+    let ms = M.createMouse
+    gameLoop (l,h) tileSize 60 (makeEtat niveau 6) rdr tmap  smap ms 0
 
 gagne :: Either Fin Etat -> Bool
 gagne e = case e of
@@ -142,15 +177,19 @@ getEtat e = case e of
                 Left f -> Nothing
 
 
-gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Int -> IO ()
-gameLoop dimensions tileSize frameRate etat renderer tmap smap nb_tours = do
+gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Int -> IO ()
+gameLoop dimensions tileSize frameRate etat renderer tmap smap ms nb_tours = do
     print etat
     startTime <- time
+    events <- pollEvents
+    let ms' = M.handleEvents events ms
     clear renderer
     let map = casesNiveau $ niveauE etat
     let lems = casesEnvironnement $ enviE etat
 
     let (width,height) = dimensions
+
+    
 
     let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSize)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSize))))
     let lemmings = (\(C x y) se -> if not (Seq.null se) then
@@ -169,8 +208,10 @@ gameLoop dimensions tileSize frameRate etat renderer tmap smap nb_tours = do
     let refreshTime = endTime - startTime
 
     let delayTime = floor (((1.0 / frameRate) - refreshTime) * 1000)
-    threadDelay $ delayTime * 100000
+    threadDelay $ delayTime * 25000
     let newEtat = tourEtat nb_tours etat
+    SDL.P (SDL.V2 x y) <- getAbsoluteMouseLocation
+    unless (not (M.mousepressed (fromIntegral x, fromIntegral y) ms')) (print "hey hey")
 
     if gagne newEtat then do
         print "GAGNE"
@@ -182,7 +223,7 @@ gameLoop dimensions tileSize frameRate etat renderer tmap smap nb_tours = do
                 else
                     let etat' = Maybe.fromJust (getEtat newEtat) in
     --unless (enCours newEtat)
-                        gameLoop dimensions tileSize frameRate etat' renderer tmap smap (nb_tours + 1)
+                        gameLoop dimensions tileSize frameRate etat' renderer tmap smap ms' (nb_tours + 1)
     return ()
 
 

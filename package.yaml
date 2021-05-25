@@ -28,6 +28,8 @@ dependencies:
 - hspec
 - keys
 - ansi-terminal
+- gloss
+
 
 default-extensions:
   OverloadedStrings

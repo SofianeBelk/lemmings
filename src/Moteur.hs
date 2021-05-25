@@ -17,7 +17,7 @@ tourMoteur n e = case tourEtat n e of
                                     print ne
                                     putStrLn ("Tour "<> show n <> " restants : "<> show (nbLemmingsRestants ne) <> ", vivants : "<> show (nbLemmingsVivants ne)<>", sortis : "<> show (nbLemmingsSortis ne))
                                     putStrLn ""
-                                    threadDelay 500000
+                                    threadDelay 500
                                     clearScreen
                                     return $ Right (n+1, ne)
 
