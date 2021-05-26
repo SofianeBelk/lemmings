@@ -1,4 +1,3 @@
-{-# LANGUAGE BlockArguments #-}
 module Main where
 import Control.Monad
 import Control.Concurrent
@@ -79,6 +78,111 @@ main = do
     let l = CInt(fromIntegral (tileSizeX * lNiveau niveau) :: Int32)
 
     rdr <- createRenderer window (-1) defaultRenderer
+    (tmap, smap) <- loadAssets tileSizeX tileSizeY rdr
+
+
+    let ms = M.createMouse
+    gameLoop (l,h) (-1) tileSizeX tileSizeY 60 (makeEtat niveau 6) rdr tmap  smap ms 0
+
+gagne :: Either Fin Etat -> Bool
+gagne e = case e of
+        Left f -> case f of
+                    Victoire _ -> True
+                    _ -> False
+        _ -> False
+
+perdu :: Either Fin Etat -> Bool
+perdu e = case e of
+        Left f -> case f of
+                    Defaite -> True
+                    _ -> False
+        _ -> False
+
+enCours :: Either Fin Etat -> Bool
+enCours e = case e of
+            Left f -> False
+            _ -> True
+
+getEtat :: Either Fin Etat -> Maybe Etat
+getEtat e = case e of
+                Right etat -> Just etat
+                Left f -> Nothing
+
+
+gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> Int -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Int -> IO ()
+gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap smap ms nb_tours = do
+    -- print etat
+    let etat' = Etat.selectLemming clickedLem etat
+    print clickedLem
+    startTime <- time
+    events <- pollEvents
+    let ms' = M.handleEvents events ms
+    clear renderer
+    let map = casesNiveau $ niveauE etat'
+    let lems = casesEnvironnement $ enviE etat'
+
+    let (width,height) = dimensions
+
+
+
+    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat') - y)*tileSizeY))))
+    let lemmings = (\(C x y) se -> if not (Seq.null se) then
+                                    S.displaySprite renderer tmap (S.moveTo
+                                    (SM.fetchSprite (SpriteId (show (Maybe.fromJust (Seq.lookup 0 se)) <> show (nb_tours `mod` 8))) smap)
+                                    (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat') - y)*tileSizeY)))
+                                    else
+                                        S.displaySprite renderer tmap (S.moveTo
+                                            (SM.fetchSprite (SpriteId " ") smap)
+                                                (fromIntegral (x*tileSizeX)) (fromIntegral((hNiveau (niveauE etat') - y)*tileSizeY))))
+
+
+    Key.mapWithKeyM_ cells map
+    Key.mapWithKeyM_ lemmings lems
+    present renderer
+    endTime <- time
+    let refreshTime = endTime - startTime
+
+    let delayTime = floor (((1.0 / frameRate) - refreshTime) * 1000)
+    threadDelay $ delayTime * 25000
+    let newEtat = tourEtat nb_tours etat
+    SDL.P (SDL.V2 x y) <- getAbsoluteMouseLocation
+    when (M.mousepressed (fromIntegral x, fromIntegral y) ms') (let res = Map.lookup (C (fromIntegral x `div`tileSizeX) ((fromIntegral height - fromIntegral y) `div`tileSizeY + 1)) (casesEnvironnement (enviE etat)) in
+                                                                 let clickedLem' = case res of
+                                                                                        Just s -> case Seq.lookup 0 s of
+                                                                                            Just (Lem id l) -> id
+                                                                                            Nothing -> clickedLem
+                                                                                        Nothing -> clickedLem
+                                                                in
+                                                                        if gagne newEtat then do
+                                                                            print "GAGNE"
+                                                                            return ()
+                                                                            else
+                                                                                if perdu newEtat then do
+                                                                                    print "PERDU"
+                                                                                    return ()
+                                                                                    else
+                                                                                        let etat' = Maybe.fromJust (getEtat newEtat) in
+                                                                                            gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
+                                                                )
+    -- print (coordEntree (niveauE etat)
+    unless (M.mousepressed (fromIntegral x, fromIntegral y) ms') (
+        if gagne newEtat then do
+            print "GAGNE"
+            return ()
+            else
+                if perdu newEtat then do
+                    print "PERDU"
+                    return ()
+                    else
+                        let etat' = Maybe.fromJust (getEtat newEtat) in
+                            gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
+                )
+
+
+
+
+loadAssets :: Int -> Int -> Renderer -> IO(TextureMap, SpriteMap)
+loadAssets tileSizeX tileSizeY rdr = do
     (tmap, smap) <- loadAsset " " tileSizeX tileSizeY rdr "assets/empty.bmp" TM.createTextureMap SM.createSpriteMap
     (tmap, smap) <- loadAsset "X" tileSizeX tileSizeY rdr "assets/metal.bmp" tmap smap
     (tmap, smap) <- loadAsset "0" tileSizeX tileSizeY rdr "assets/dirt.bmp" tmap smap
@@ -125,101 +229,46 @@ main = do
     (tmap, smap) <- loadAsset "v6" tileSizeX tileSizeY rdr "assets/lemming_fall_r/2.bmp" tmap smap
     (tmap, smap) <- loadAsset "v7" tileSizeX tileSizeY rdr "assets/lemming_fall_r/3.bmp" tmap smap
 
+
+    (tmap, smap) <- loadAsset ">'" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'0" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'1" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'2" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'3" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'4" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'5" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'6" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset ">'7" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/7.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "<'" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'0" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'1" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'2" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'3" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'4" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'5" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'6" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "<'7" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/7.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "V'" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'0" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'1" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'2" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'3" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'4" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'5" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'6" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "V'7" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/3.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "v'" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'0" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'1" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'2" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'3" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'4" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'5" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'6" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "v'7" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/3.bmp" tmap smap
+
     (tmap, smap) <- loadAsset "+" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-
-
-    let ms = M.createMouse
-    gameLoop (l,h) (-1) tileSizeX tileSizeY 60 (makeEtat niveau 6) rdr tmap  smap ms 0
-
-gagne :: Either Fin Etat -> Bool
-gagne e = case e of
-        Left f -> case f of
-                    Victoire _ -> True
-                    _ -> False
-        _ -> False
-
-perdu :: Either Fin Etat -> Bool
-perdu e = case e of
-        Left f -> case f of
-                    Defaite -> True
-                    _ -> False
-        _ -> False
-
-enCours :: Either Fin Etat -> Bool
-enCours e = case e of
-            Left f -> False
-            _ -> True
-
-getEtat :: Either Fin Etat -> Maybe Etat
-getEtat e = case e of
-                Right etat -> Just etat
-                Left f -> Nothing
-
-
-gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> Int -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Int -> IO ()
-gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap smap ms nb_tours = do
-    -- print etat
-    print clickedLem
-    startTime <- time
-    events <- pollEvents
-    let ms' = M.handleEvents events ms
-    clear renderer
-    let map = casesNiveau $ niveauE etat
-    let lems = casesEnvironnement $ enviE etat
-
-    let (width,height) = dimensions
-
-
-
-    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSizeY))))
-    let lemmings = (\(C x y) se -> if not (Seq.null se) then
-                                    S.displaySprite renderer tmap (S.moveTo
-                                    (SM.fetchSprite (SpriteId (show (Maybe.fromJust (Seq.lookup 0 se)) <> show (nb_tours `mod` 8))) smap)
-                                    (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat) - y)*tileSizeY)))
-                                    else
-                                        S.displaySprite renderer tmap (S.moveTo
-                                            (SM.fetchSprite (SpriteId " ") smap)
-                                                (fromIntegral (x*tileSizeX)) (fromIntegral((hNiveau (niveauE etat) - y)*tileSizeY))))
-
-
-    Key.mapWithKeyM_ cells map
-    Key.mapWithKeyM_ lemmings lems
-    present renderer
-    endTime <- time
-    let refreshTime = endTime - startTime
-
-    let delayTime = floor (((1.0 / frameRate) - refreshTime) * 1000)
-    threadDelay $ delayTime * 25000
-    let newEtat = tourEtat nb_tours etat
-    SDL.P (SDL.V2 x y) <- getAbsoluteMouseLocation
-    when (M.mousepressed (fromIntegral x, fromIntegral y) ms') (let res = Map.lookup (C (fromIntegral x `div`tileSizeX) ((fromIntegral height - fromIntegral y) `div`tileSizeY + 1)) (casesEnvironnement (enviE etat)) in
-                                                                 let clickedLem' = case res of
-                                                                                        Just s -> case Seq.lookup 0 s of
-                                                                                            Just (Lem id l) -> id
-                                                                                            Nothing -> (-1)
-                                                                                        Nothing -> (-1)
-                                                                in
-                                                                        if gagne newEtat then do
-                                                                            print "GAGNE"
-                                                                            return ()
-                                                                            else
-                                                                                if perdu newEtat then do
-                                                                                    print "PERDU"
-                                                                                    return ()
-                                                                                    else
-                                                                                        let etat' = Maybe.fromJust (getEtat newEtat) in
-                                                                                            gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
-                                                                )
-    -- print (coordEntree (niveauE etat)
-    unless (M.mousepressed (fromIntegral x, fromIntegral y) ms') (
-        if gagne newEtat then do
-            print "GAGNE"
-            return ()
-            else
-                if perdu newEtat then do
-                    print "PERDU"
-                    return ()
-                    else
-                        let etat' = Maybe.fromJust (getEtat newEtat) in
-                            gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
-                )
+    loadAsset "+'" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap

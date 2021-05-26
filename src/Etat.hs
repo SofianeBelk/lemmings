@@ -1,3 +1,4 @@
+{-# LANGUAGE EmptyCase #-}
 module Etat where
 
 import qualified Data.Map as Map
@@ -7,6 +8,8 @@ import Lemmings
 import Coord
 import Data.String as String
 import Data.List as List
+
+import Data.Sequence as Seq
 
 data Etat = Etat{
     enviE :: Environnement,
@@ -41,28 +44,35 @@ instance Show Etat where
     show etat =  showEtat etat
 
 tourLemming :: Int -> Lemming -> Etat -> Etat
-tourLemming n (Mort c) (Etat envi niv r v s) = Etat (enleveEnvi v envi) niv r (v-1) s
+tourLemming n (Mort c _) (Etat envi niv r v s) = Etat (enleveEnvi v envi) niv r (v-1) s
 
-tourLemming n (Marcheur Gauche c) (Etat envi niv r m s)  = case coordSortie niv of
+tourLemming n (Marcheur Gauche c se) (Etat envi niv r m s)  = case coordSortie niv of
                                                                 Nothing -> suite
                                                                 Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (m-1) (s+1) else suite
                                                                 where suite = case (passable (gauche c) niv, dure (bas c) niv) of
                                                                                 (True, True) -> Etat (deplaceDansEnvironnement n (gauche c) envi) niv r m s
-                                                                                (_, False) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur Gauche hauteurMax c))) envi) niv r m s
-                                                                                (_,_) -> Etat (appliqueIdEnv n (const (Lem n (Marcheur Droite c)))envi ) niv r m s
+                                                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Tombeur Gauche hauteurMax c se))) envi of
+                                                                                        Right e -> Etat e niv r m s
+                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c se)))envi of
+                                                                                        Right e -> Etat e niv r m s
 
-tourLemming n (Marcheur Droite c) (Etat envi niv r m s)  = case coordSortie niv of
+tourLemming n (Marcheur Droite c se) (Etat envi niv r m s)  = case coordSortie niv of
                                                                 Nothing -> suite
                                                                 Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (m-1) (s+1) else suite
                                                                 where suite = case (passable (droite c) niv && passable (haut (droite c)) niv , dure(bas c) niv) of
                                                                                     (True, True) -> Etat (deplaceDansEnvironnement n (droite c) envi) niv r m s
-                                                                                    (_,False) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur Droite hauteurMax c)))envi) niv r m s
-                                                                                    (_,_) ->Etat (appliqueIdEnv n (const (Lem n (Marcheur Gauche c))) envi) niv r m s
+                                                                                    (_,False) -> case appliqueIdEnv n (const (Lem n (Tombeur Droite hauteurMax c se)))envi of
+                                                                                            Right e-> Etat e niv r m s
+                                                                                    (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c se))) envi of
+                                                                                            Right e -> Etat e niv r m s
 
-tourLemming n (Tombeur di k c) (Etat envi niv r v s) = case (dure (bas c) niv, n <= 0) of
-                                                        (True, True) -> Etat (appliqueIdEnv n (const (Lem n (Mort c))) envi) niv r (v-1) s
-                                                        (True, _) -> Etat (appliqueIdEnv n (const (Lem n (Marcheur di c))) envi) niv r v s
-                                                        (_, _) -> Etat (appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c)))) (deplaceDansEnvironnement n (bas c) envi)) niv r v s
+tourLemming n (Tombeur di k c se) (Etat envi niv r v s) = case (dure (bas c) niv, n <= 0) of
+                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Mort c se))) envi of
+                                                                Right e -> Etat e niv r (v-1) s
+                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur di c se))) envi of
+                                                                Right e -> Etat e niv r v s
+                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c) se))) (deplaceDansEnvironnement n (bas c) envi) of
+                                                                Right e -> Etat e niv r v s
 
 
 tourEntite :: Int -> Etat -> Etat
@@ -75,7 +85,7 @@ ajouterLemming (Etat envi niv r v s) = case coordEntree niv of
                                 Nothing -> Etat envi niv r v s
                                 Just c -> Etat nenvi niv (r-1) (v+1) s
                                  where nenvi = ajouteEntite nlem envi
-                                       nlem = Lem (nouveauId envi) (Tombeur Droite hauteurMax c)
+                                       nlem = Lem (nouveauId envi) (Tombeur Droite hauteurMax c False)
 
 tourEtat :: Int -> Etat -> Either Fin Etat
 tourEtat t e = (verif . pop) $ foldr etape e (entitesEnvironnement (enviE e))
@@ -87,3 +97,22 @@ tourEtat t e = (verif . pop) $ foldr etape e (entitesEnvironnement (enviE e))
                                     else Right et
 
                               
+selectLemming :: Int -> Etat -> Etat
+selectLemming id etat@(Etat envi niv r m s) = case Environnement.trouveIdSeq id (entitesEnvironnement envi) of
+                            Just (Lem id l) -> case l of
+                                (Mort c _) -> case appliqueIdEnv id (const (Lem id (Mort c True)))envi of
+                                    Right e -> Etat e niv r m s
+                                    Left _ -> etat
+                                (Marcheur d c _) -> case appliqueIdEnv id (const (Lem id (Marcheur d c True)))envi of
+                                                        Right e -> Etat e niv r m s
+                                                        Left _ -> etat
+                                (Creuseur d c _) ->  case appliqueIdEnv id (const (Lem id (Creuseur d c True)))envi of
+                                                        Right e -> Etat e niv r m s
+                                                        Left _ -> etat
+                                (Poseur d c _) -> case appliqueIdEnv id (const (Lem id (Poseur d c True)))envi of
+                                                        Right e -> Etat e niv r m s
+                                                        Left _ -> etat
+                                (Tombeur d n c _) -> case appliqueIdEnv n (const (Lem n (Tombeur d n c True)))envi of
+                                                        Right e -> Etat e niv r m s
+                                                        Left _ -> etat
+                            Nothing -> Etat envi niv r m s

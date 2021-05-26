@@ -7,68 +7,78 @@ import qualified Data.Map as Map
 data Direction = Gauche | Droite
                 deriving (Show, Eq)
 
-data Lemming =  Mort Coord
-              | Marcheur Direction Coord
-              | Creuseur Direction Coord
-              | Poseur Direction Coord
-              | Tombeur Direction Int Coord
+data Lemming =  Mort Coord Bool
+              | Marcheur Direction Coord Bool
+              | Creuseur Direction Coord Bool
+              | Poseur Direction Coord Bool
+              | Tombeur Direction Int Coord Bool
               deriving Eq
 -- >>> Marcheur Gauche (C 3 2) == Marcheur Gauche (C 3 2)
 -- True
 
 makeMort :: Coord -> Lemming
-makeMort = Mort
+makeMort c = Mort c False
 
 makeMarcheur :: Direction -> Coord -> Lemming
-makeMarcheur = Marcheur
+makeMarcheur d c = Marcheur d c False
 
 makeCreuseur :: Direction -> Coord -> Lemming
-makeCreuseur = Creuseur
+makeCreuseur d c = Creuseur d c False
 
 makePoseur :: Direction -> Coord -> Lemming
-makePoseur = Poseur
+makePoseur d c = Poseur d c False
 
 makeTombeur :: Direction -> Int -> Coord -> Lemming
-makeTombeur = Tombeur
+makeTombeur d i c = Tombeur d i c False
 
 prop_lemmingInv :: Lemming -> Bool
-prop_lemmingInv (Mort c) = prop_coordInv c
-prop_lemmingInv (Marcheur _ c) = prop_coordInv c
-prop_lemmingInv (Creuseur _ c) = prop_coordInv c
-prop_lemmingInv (Poseur _ c) = prop_coordInv c
-prop_lemmingInv (Tombeur _ n c) = prop_coordInv c && n > 0
+prop_lemmingInv (Mort c _) = prop_coordInv c
+prop_lemmingInv (Marcheur _ c _) = prop_coordInv c
+prop_lemmingInv (Creuseur _ c _) = prop_coordInv c
+prop_lemmingInv (Poseur _ c _) = prop_coordInv c
+prop_lemmingInv (Tombeur _ n c _) = prop_coordInv c && n > 0
 
 instance Show Lemming where 
-    show (Mort _) = "+"
-    show (Marcheur Droite _) = ">"
-    show (Marcheur Gauche _) = "<"
+    show (Mort _ False) = "+"
+    show (Mort _ True) = "+'"
+
+    show (Marcheur Droite _ False) = ">"
+    show (Marcheur Gauche _ False) = "<"
+
+    show (Marcheur Droite _ True) = ">'"
+    show (Marcheur Gauche _ True) = "<'"
+
     show Creuseur {} = "C"
     show Poseur {} = "P"
-    show (Tombeur Gauche _ _) = "V"
-    show (Tombeur Droite _ _) = "v"
+
+    show (Tombeur Gauche _ _ False) = "V"
+    show (Tombeur Droite _ _ False) = "v"
+
+    show (Tombeur Gauche _ _ True) = "V'"
+    show (Tombeur Droite _ _ True) = "v'"
 
 coordLemming :: Lemming -> Coord
-coordLemming (Mort c) = c
-coordLemming (Marcheur _ c ) = c
-coordLemming (Creuseur _ c ) = c
-coordLemming (Poseur _ c ) = c
-coordLemming (Tombeur _ _ c ) = c
+coordLemming (Mort c _) = c
+coordLemming (Marcheur _ c _) = c
+coordLemming (Creuseur _ c _) = c
+coordLemming (Poseur _ c _) = c
+coordLemming (Tombeur _ _ c _) = c
 
 bougeLemming :: Deplacement -> Lemming -> Lemming
-bougeLemming _ (Mort c) = Mort c
-bougeLemming d (Marcheur di c )
-    |d == G || d == GH = Marcheur Gauche (bougeCoord d c)
-    |d == D || d == DH = Marcheur Droite (bougeCoord d c)
-bougeLemming _ (Creuseur di c) = Creuseur di (bougeCoord B c)
-bougeLemming _(Poseur di c) = Poseur di c
-bougeLemming _ (Tombeur di n c) = Tombeur di (n-1) (bougeCoord B c)
+bougeLemming _ (Mort c s) = Mort c s
+bougeLemming d (Marcheur di c s)
+    |d == G || d == GH = Marcheur Gauche (bougeCoord d c) s
+    |d == D || d == DH = Marcheur Droite (bougeCoord d c) s
+bougeLemming _ (Creuseur di c s) = Creuseur di (bougeCoord B c) s
+bougeLemming _(Poseur di c s) = Poseur di c s
+bougeLemming _ (Tombeur di n c s) = Tombeur di (n-1) (bougeCoord B c) s
 
 deplaceLemming :: Coord -> Lemming -> Lemming
-deplaceLemming _ (Mort c) = Mort c
-deplaceLemming co (Marcheur d _ ) = Marcheur d co
-deplaceLemming co (Creuseur d _ ) = Creuseur d co
-deplaceLemming co (Poseur d _ ) = Poseur d co
-deplaceLemming co (Tombeur d n _ ) = Tombeur d n co
+deplaceLemming _ (Mort c s) = Mort c s
+deplaceLemming co (Marcheur d _ s) = Marcheur d co s
+deplaceLemming co (Creuseur d _ s) = Creuseur d co s
+deplaceLemming co (Poseur d _ s) = Poseur d co s
+deplaceLemming co (Tombeur d n _ s) = Tombeur d n co s
 
 instance Placable Lemming where 
     coordP = coordLemming

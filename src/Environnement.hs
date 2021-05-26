@@ -76,10 +76,12 @@ appliqueIdSeq i f = Prelude.foldr etape S.Empty
             |idEntite n == i = f n S.:<| acc
             |otherwise = n S.:<| acc
 
-appliqueIdEnv :: Int -> (Entite -> Entite) -> Environnement -> Environnement
+data IdError = IdError
+
+appliqueIdEnv :: Int -> (Entite -> Entite) -> Environnement -> Either IdError Environnement
 appliqueIdEnv n f envi@(Environnement h l ents cases) = case trouveIdSeq n ents of
-                                                Nothing -> error $ "appliqueIdEnv : Pas trouvé l'entité" ++ show n ++ " dans la Seq"
-                                                Just e -> Environnement h l nents ncases
+                                                Nothing -> Left IdError
+                                                Just e -> Right (Environnement h l nents ncases)
                                                     where   nents = appliqueIdSeq n f ents
                                                             ncases = case trouveIdMap n cases of
                                                                         Nothing -> error $ "appliqueIdEnv : Pas trouvé l'entité" ++ show n ++ " dans la Map"
@@ -105,11 +107,11 @@ enleveEnvi n (Environnement h l ents cases) = Environnement h l nents ncases
                                                                                     
 deplaceDansEnvironnement :: Int -> Coord -> Environnement -> Environnement
 deplaceDansEnvironnement n dest (Environnement h l ents cases) = case trouveIdSeq n ents of
-                                                    Nothing -> error $ "deplaceDansEnvi : Pas trouvé l'entité" ++ show n ++ " dans la Seq"
+                                                    Nothing -> error $ "deplaceDansEnvi : Pas trouvé l'entité " ++ show n ++ " dans la Seq"
                                                     Just e -> Environnement h l nents ncases
                                                         where nents = appliqueIdSeq n (deplaceP dest) ents
                                                               ncases = case trouveIdMap n cases of
-                                                                        Nothing ->  error $ "deplaceDansEnvi : Pas trouvé l'entité" ++ show n ++ " dans la Map"
+                                                                        Nothing ->  error $ "deplaceDansEnvi : Pas trouvé l'entité " ++ show n ++ " dans la Map"
                                                                         Just source -> let dents = Y.fromMaybe S.empty $ M.lookup dest cases in
                                                                                         let sents = Y.fromMaybe S.empty $ M.lookup source cases in
                                                                                         let ncases = M.insert source (enleveId n sents) cases in
