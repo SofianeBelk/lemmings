@@ -6,7 +6,7 @@ import qualified Data.List as List
 import Coord
 
 -- Case 
-data Case = Metal | Terre | Entree | Sortie | Vide | Blocked
+data Case = Metal | Terre | Entree | Sortie | Vide | Mine | MineActive |Blocked
     deriving Eq
 
 -- Instanciation show
@@ -16,6 +16,8 @@ instance Show Case where
     show Terre  =  "0"
     show Entree =  "E"
     show Sortie =  "S"
+    show Mine = "M"
+    show MineActive = "W"
     show Blocked =  " "
 
 -- Instanciation Read
@@ -28,6 +30,7 @@ lectureCase "X"= Metal
 lectureCase "0"= Terre
 lectureCase "E"= Entree
 lectureCase "S"= Sortie
+lectureCase "M"= Mine
 lectureCase _= Vide
 
 -- Niveau
@@ -131,7 +134,9 @@ vide :: Coord -> Niveau -> Bool
 vide c (Niveau _ _ cns) = Map.lookup c cns == Just Vide
 
 dure :: Coord -> Niveau -> Bool
-dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre || Map.lookup c cns == Just Blocked
+dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre ||
+                            Map.lookup c cns == Just Blocked || Map.lookup c cns == Just Mine 
+                            || Map.lookup c cns == Just MineActive
 
 terre :: Coord -> Niveau -> Bool 
 terre c (Niveau _ _ cns) = Map.lookup c cns == Just Terre
@@ -141,6 +146,16 @@ supprimerCase c (Niveau h l casesNiveau) = Niveau h l (Map.insert c Vide casesNi
 
 poserCase :: Coord -> Niveau -> Niveau
 poserCase co (Niveau h l casesNiveau) = Niveau h l (Map.insert co Terre casesNiveau)
+
+activerMine :: Coord -> Niveau -> Niveau
+activerMine co niv@(Niveau h l casesNiveau) = case Map.lookup co casesNiveau of
+                                            Just Mine -> Niveau h l (Map.insert co MineActive casesNiveau)
+                                            _ -> niv
+
+desactiverMine :: Coord -> Niveau -> Niveau
+desactiverMine co niv@(Niveau h l casesNiveau) = case Map.lookup co casesNiveau of
+                                            Just Mine -> Niveau h l (Map.insert co Terre casesNiveau)
+                                            _ -> niv
 
 exploserCase :: Coord -> Niveau -> Niveau
 exploserCase c (Niveau h l casesNiveau) = let m = (case Map.lookup (haut c) casesNiveau of
