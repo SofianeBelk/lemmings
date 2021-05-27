@@ -98,6 +98,10 @@ Au lancement du jeu une interface graphique s'ouvre, quand on lance le niveau do
 Invariant du type *Coord* :
 
 * Les coordonnées sont positives.
+* Un déplacement à gauche puis à droite revient à la même coordonnée.
+* Un déplacement à droite puis à gauche revient à la même coordonnée.
+* Un déplacement à gauche puis en haut revient à aller à la coordonnée d'en haut à gauche.
+* Un déplacement à droite puis en bas revient à aller à la coordonnée d'en bas à droite.
 
 Post-condition des fonctions :
 
@@ -112,11 +116,20 @@ Invariants du type *Environnement* :
 
 Pré-conditions des fonctions :
 
-* ...
+* makeEnvironnement : la hauteur et la largeur sont strictement positives.
+* trouveIdEnvi : l'identifiant est positif.
+* trouveIdSeq : l'identifiant est positif.
+* trouveIdMap : l'identifiant est positif.
+* appliqueIdSeq : l'identifiant est positif.
 
 Post-conditions des fonctions :
 
-* ...
+* enleveEnvi : l'entité n'est plus dans l'environnement.
+* deplaceDansEnvironnement : l'entité est dans la sequence corréspondante à ses nouvelles coordonnées.
+* ajouteEntite : l'entité a été ajouté à l'environnement.
+
+
+
 
 
 ### Etat
@@ -141,13 +154,6 @@ Invariant du type *Lemmings* :
 
 * l'invariant de ses coordonnées est vérifié.
 
-Pré-conditions des fonctions :
-
-* ...
-
-Post-conditions des fonctions :
-
-* ...
 
 ### Niveau
 
@@ -162,11 +168,30 @@ Invariants du type *Niveau* :
 
 Pré-conditions des fonctions :
 
-* ...
+* supprimerCase : la case a détruire est de la terre.
+* poserCase : la case est une case vide.
+* activerMine : la case est une mine.
+* desactiverMine : la case est une mine activée.
+* bloquer : la case est vide.
+* debloquer : la case bloquée
 
 Post-conditions des fonctions :
 
-* prop_post_readNiveau : le niveau créé vérifie son invariant.
+* readNiveau : le niveau créé vérifie son invariant.
+* supprimerCase : la case supprimée est une case Vide.
+* poserCase : la case est une case de terre.
+* activerMine : la case est une mine activée.
+* desactiverMine : la case est une case de terre.
+* exploserCase : les 8 cases autours et la case elle même ne sont pas des cases de terre.
+* bloquer : la case est bloquée
+* debloquer : la case debloquée
+
+
+
+
+
+
+
 
 
 
