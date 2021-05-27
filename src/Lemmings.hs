@@ -12,6 +12,8 @@ data Lemming =  Mort Coord
               | Creuseur Direction Int Coord
               | Constructeur Direction Int Coord
               | Exploseur Int Coord
+              | Bloqueur Direction Int Coord
+              | Boucheur Direction Int Coord
               | Tombeur Direction Int Coord
               deriving Eq
 
@@ -32,6 +34,12 @@ makeConstructeur = Creuseur
 makeExploseur ::  Int -> Coord -> Lemming
 makeExploseur = Exploseur
 
+makeBloqueur ::  Direction -> Int -> Coord -> Lemming
+makeBloqueur = Bloqueur
+
+makeBoucheur ::  Direction -> Int -> Coord -> Lemming
+makeBoucheur = Bloqueur
+
 makeTombeur :: Direction -> Int -> Coord -> Lemming
 makeTombeur = Tombeur
 
@@ -43,6 +51,8 @@ prop_lemmingInv (Marcheur _ c _) = prop_coordInv c
 prop_lemmingInv (Creuseur _ _ c) = prop_coordInv c
 prop_lemmingInv (Constructeur _ _ c) = prop_coordInv c
 prop_lemmingInv (Exploseur _ c) = prop_coordInv c
+prop_lemmingInv (Bloqueur _ _ c) = prop_coordInv c
+prop_lemmingInv (Boucheur _ _ c) = prop_coordInv c
 prop_lemmingInv (Tombeur _ n c) = prop_coordInv c && n > 0
 
 -- Instanciation show
@@ -64,6 +74,11 @@ instance Show Lemming where
 
     show Exploseur {} = "Ex"
 
+    show Bloqueur {} = "Q"
+
+    show (Boucheur Gauche _ _ ) = "P"
+    show (Boucheur Droite _ _ ) = "p"
+
     show (Tombeur Gauche _ _) = "V"
     show (Tombeur Droite _ _) = "v"
 
@@ -75,6 +90,8 @@ coordLemming (Marcheur _ c _) = c
 coordLemming (Creuseur _ _ c) = c
 coordLemming (Constructeur _ _ c) = c
 coordLemming (Exploseur _ c) = c
+coordLemming (Bloqueur _ _ c) = c
+coordLemming (Boucheur _ _ c) = c
 coordLemming (Tombeur _ _ c) = c
 
 bougeLemming :: Deplacement -> Lemming -> Lemming
@@ -84,6 +101,8 @@ bougeLemming d (Marcheur di c s)
     |d == D || d == DH = Marcheur Droite (bougeCoord d c) s
 bougeLemming _ c@Creuseur {} = c
 bougeLemming _ c@Constructeur {} = c
+bougeLemming _ b@Bloqueur {} = b
+bougeLemming _ b@Boucheur {} = b
 bougeLemming _ e@(Exploseur _ _) = e
 bougeLemming _ (Tombeur di n c) = Tombeur di (n-1) (bougeCoord B c)
 
@@ -91,7 +110,9 @@ deplaceLemming :: Coord -> Lemming -> Lemming
 deplaceLemming _ (Mort c) = Mort c
 deplaceLemming co (Marcheur d _ s) = Marcheur d co s
 deplaceLemming co (Creuseur d n _) = Creuseur d n co
-deplaceLemming co (Constructeur d n _) = Creuseur d n co
+deplaceLemming co (Constructeur d n _) = Constructeur d n co
+deplaceLemming co (Bloqueur d n _) = Bloqueur d n co
+deplaceLemming co (Boucheur d n _) = Boucheur d n co
 deplaceLemming co (Exploseur n _) = Exploseur n co
 deplaceLemming co (Tombeur d n _) = Tombeur d n co
 

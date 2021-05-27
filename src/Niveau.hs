@@ -7,7 +7,7 @@ import Coord
 
 -- Case 
 
-data Case = Metal | Terre | Entree | Sortie | Vide
+data Case = Metal | Terre | Entree | Sortie | Vide | Block
     deriving Eq
 
 -- Instanciation show
@@ -18,6 +18,7 @@ instance Show Case where
     show Terre  =  "0"
     show Entree =  "E"
     show Sortie =  "S"
+    show Block =  " "
 
 -- Instanciation Read
 
@@ -149,20 +150,16 @@ vide :: Coord -> Niveau -> Bool
 vide c (Niveau _ _ cns) = Map.lookup c cns == Just Vide
 
 dure :: Coord -> Niveau -> Bool
-dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre
+dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre || Map.lookup c cns == Just Block
 
 terre :: Coord -> Niveau -> Bool 
 terre c (Niveau _ _ cns) = Map.lookup c cns == Just Terre
 
-
 supprimerCase :: Coord -> Niveau -> Niveau
 supprimerCase c (Niveau h l casesNiveau) = Niveau h l (Map.insert (bas c) Vide casesNiveau)
 
-poserCaseDroite :: Coord -> Niveau -> Niveau
-poserCaseDroite co (Niveau h l casesNiveau) = Niveau h l (Map.insert (droite co) Terre casesNiveau)
-
-poserCaseGauche :: Coord -> Niveau -> Niveau
-poserCaseGauche co (Niveau h l casesNiveau) = Niveau h l (Map.insert (gauche co) Terre casesNiveau)
+poserCase :: Coord -> Niveau -> Niveau
+poserCase co (Niveau h l casesNiveau) = Niveau h l (Map.insert co Terre casesNiveau)
 
 exploserCase :: Coord -> Niveau -> Niveau
 exploserCase c (Niveau h l casesNiveau) = let m = (case Map.lookup (haut c) casesNiveau of
@@ -193,3 +190,9 @@ exploserCase c (Niveau h l casesNiveau) = let m = (case Map.lookup (haut c) case
                                                                                 Just Terre -> Map.insert (gauche c) Vide m8
                                                                                 _ -> m8 )in
                                                                             Niveau h l m9
+
+bloquer :: Coord -> Niveau -> Niveau
+bloquer co (Niveau h l casesNiveau) = Niveau h l (Map.insert co Block casesNiveau)
+
+debloquer :: Coord -> Niveau -> Niveau
+debloquer co (Niveau h l casesNiveau) = Niveau h l (Map.insert co Vide casesNiveau)
