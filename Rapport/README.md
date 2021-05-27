@@ -12,3 +12,19 @@ Vous trouverez dans le projet les répertoires :
 
 # Creation d'un niveau
 
+Pour créer un niveau, chaque case doit correspondre à une des lettres :
+
+* **X** : pour une case en métal.
+* **0** : pour une case en terre.
+* **E** : pour une entrée.
+* **S** : pour une sortie.
+* **M** : pour une mine.
+* **Espace** : pour une case vide.
+
+Et le niveau doit respecter certaines propriétés :
+
+* Les bords du niveau doivent être en métal.
+* Le niveau possède exactement une entrée et une sortie.
+* L'entrée se trouve au dessus d'une case vide.
+* La sortie se trouve au dessus d'une case en métal.
+* Toutes les coordonnées comprise entre 0 et la hauteur/largeur du niveau sont associées à une case et réciproquement.
