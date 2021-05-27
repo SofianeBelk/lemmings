@@ -87,5 +87,89 @@ Dans une map, des lemmings sont générés et le joueur doit faire en sorte d'en
 
 Si tout les lemmings meurent, la partie se termine et le joueur a perdu, sinon, si il arrive à en sauver quelques-uns, on parle de victoire partielle, sinon, si tout les lemmings sont sauvés, alors le joueur a gagné.
 
-Au lancement du jeu une interface graphique s'ouvre, quand on lance le niveau donné ci-dessus, on a cet affichage :
+Au lancement du jeu une interface graphique s'ouvre, quand on lance le niveau donné ci-dessus, on a l'affichage suivant :
+
+![](./niveau1.png)
+
+## Propositions
+
+### Coord
+
+Invariant du type *Coord* :
+
+* Les coordonnées sont positives.
+
+Post-condition des fonctions :
+
+* initCoord : la coordonnée instanciée respecte l'invariant.
+
+### Environnement
+
+Invariants du type *Environnement* :
+
+* Chaque entité présente dans la liste des entités de l'environnement est présente dans au moins une case de l'environnement.
+* Chaque entité présente dans une case de l'environnement est présente dans la liste de entités de l'environnement.
+
+Pré-conditions des fonctions :
+
+* ...
+
+Post-conditions des fonctions :
+
+* ...
+
+
+### Etat
+
+Invariants du type *Etat* :
+
+* l'invariant de son environnement est vérifié.
+* l'invariant de son niveau est vérifié.
+* le nombre total de lemmings est strictement supérieur à 0.
+
+Pré-conditions des fonctions :
+
+* ...
+
+Post-conditions des fonctions :
+
+* ...
+
+### Lemmings
+
+Invariant du type *Lemmings* :
+
+* l'invariant de ses coordonnées est vérifié.
+
+Pré-conditions des fonctions :
+
+* ...
+
+Post-conditions des fonctions :
+
+* ...
+
+### Niveau
+
+Invariants du type *Niveau* :
+
+* un niveau a exactement une entrée et une sortie.
+* les bords du niveau sont en métal.
+* l'entrée se trouve au dessus d'une case vide et la sortie au dessus d'une case en métal.
+* la hauteur et la largeur du niveau sont strictement positives.
+* le niveau a au moins une case.
+
+
+Pré-conditions des fonctions :
+
+* ...
+
+Post-conditions des fonctions :
+
+* prop_post_readNiveau : le niveau créé vérifie son invariant.
+
+
+
+
+
 
