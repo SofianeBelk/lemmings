@@ -38,7 +38,7 @@ nbLemmings = 6          -- Nombre initial de Lemmings dans le niveau
 ## Comment jouer
 
 Pour modifier le comportement d'un *lemming*, faites un click de souris dessus et appuiyez sur une des touches :
-* **x** : le lemming devient un *Exploseur*, il explose en détruisant toutes les cases en *terre* qui l'entourent.
+* **x** : le lemming devient un *Exploseur*, il explose en détruisant toutes les cases en *terre* qui l'entourent et tue les limmings qui sont à côté de lui.
 * **c** : le lemming devient un *Creseur*, si la case du bas à côté de lui est en *terre* il la détruit.
 * **v** : le lemming devient un *Bloqueur*, il empêche les autres lemmings de passer pendant 8 tours de jeu.
 * **b** : le lemming devient un *Constructeur*, si la case à côté de lui est vide, il pose un bloque en *terre*.
