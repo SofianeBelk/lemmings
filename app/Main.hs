@@ -9,37 +9,25 @@ import Data.Int
 import System.Environment
 import Coord
 import Foreign.C.Types
-
 import Data.Key
 import qualified Data.Key as Key
-
 import Data.StateVar
-
 import Environnement
 import Data.Maybe
 import qualified Data.Maybe as Maybe
-
 import Data.Sequence
 import qualified Data.Sequence as Seq
-
 import SDL
-
 import Mouse (Mouse)
 import qualified Mouse as M
-
 import Keyboard (Keyboard)
 import qualified Keyboard as K
-
 import TextureMap
 import qualified TextureMap as TM
-
 import Sprite
 import qualified Sprite as S
-
 import SpriteMap
 import qualified SpriteMap as SM
-
-import Environnement
 
 niv :: Niveau
 niv = exempleNiveau
@@ -114,7 +102,6 @@ getEtat e = case e of
 
 gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> Int -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Keyboard -> Int -> IO ()
 gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap smap ms kbd nb_tours = do
-    -- print etat
     let etat' = Etat.selectLemming clickedLem etat
     startTime <- time
     events <- pollEvents
@@ -127,11 +114,11 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
 
     let (width,height) = dimensions
 
-    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat') - y)*tileSizeY))))
+    let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat') - y - 1)*tileSizeY))))
     let lemmings = (\(C x y) se -> if not (Seq.null se) then
                                     S.displaySprite renderer tmap (S.moveTo
                                     (SM.fetchSprite (SpriteId (show (Maybe.fromJust (Seq.lookup 0 se)) <> show (nb_tours `mod` 8))) smap)
-                                    (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat') - y)*tileSizeY)))
+                                    (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat') - y - 1)*tileSizeY)))
                                     else
                                         S.displaySprite renderer tmap (S.moveTo
                                             (SM.fetchSprite (SpriteId " ") smap)
@@ -150,7 +137,7 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
                     Right e -> Etat.playLemming clickedLem e kbd'
                     Left err -> etat'
     SDL.P (SDL.V2 x y) <- getAbsoluteMouseLocation
-    when (M.mousepressed (fromIntegral x, fromIntegral y) ms') (let res = Map.lookup (C (fromIntegral x `div`tileSizeX) ((fromIntegral height - fromIntegral y) `div`tileSizeY + 1)) (casesEnvironnement (enviE etat)) in
+    when (M.mousepressed (fromIntegral x, fromIntegral y) ms') (let res = Map.lookup (C (fromIntegral x `div`tileSizeX) ((fromIntegral height - fromIntegral y) `div`tileSizeY)) (casesEnvironnement (enviE etat)) in
                                                                  let clickedLem' = case res of
                                                                                         Just s -> case Seq.lookup 0 s of
                                                                                             Just (Lem id l) -> id
@@ -174,7 +161,6 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
             return ()) else
                     gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
                 )
-
 
 loadAssets :: Int -> Int -> Renderer -> IO(TextureMap, SpriteMap)
 loadAssets tileSizeX tileSizeY rdr = do
