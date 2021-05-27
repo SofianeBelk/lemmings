@@ -17,8 +17,7 @@ data Lemming =  Mort Coord
               | Tombeur Direction Int Coord
               deriving Eq
 
--- constructeur lemming
-
+-- constructeurs des Lemmings
 makeMort :: Coord -> Lemming
 makeMort = Mort
 
@@ -44,7 +43,6 @@ makeTombeur :: Direction -> Int -> Coord -> Lemming
 makeTombeur = Tombeur
 
 -- Invariant lemming
-
 prop_lemmingInv :: Lemming -> Bool
 prop_lemmingInv (Mort c) = prop_coordInv c
 prop_lemmingInv (Marcheur _ c _) = prop_coordInv c
@@ -56,7 +54,6 @@ prop_lemmingInv (Boucheur _ _ c) = prop_coordInv c
 prop_lemmingInv (Tombeur _ n c) = prop_coordInv c && n > 0
 
 -- Instanciation show
-
 instance Show Lemming where 
     show (Mort _) = "+"
 
@@ -83,7 +80,6 @@ instance Show Lemming where
     show (Tombeur Droite _ _) = "v"
 
 -- pour les propriétes ces fonctions doivent vérifier la loi de placable : prop_placableLaw
-
 coordLemming :: Lemming -> Coord
 coordLemming (Mort c) = c
 coordLemming (Marcheur _ c _) = c

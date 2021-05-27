@@ -2,7 +2,6 @@ module Sprite where
 
 import Niveau
 
-
 import qualified Data.Map as Map
 
 import Control.Monad.IO.Class (MonadIO)
@@ -23,17 +22,15 @@ import qualified TextureMap as TM
 
 import qualified Debug.Trace as T
 
-
 type Area = Rectangle CInt
 
 data Image =
   Image { textureId :: TextureId
         , sourceArea :: Area }
 
---  Les lutins sont associés à des images (textures)
+--  Les lemmings sont associés à des images (textures)
 createImage :: TextureId -> Area -> Image
-createImage txt rct = Image txt rct
-
+createImage = Image
 
 data Sprite =
   Sprite { images :: Seq Image
@@ -42,22 +39,22 @@ data Sprite =
 
 -- | création d'un Niveau "vide"
 createEmptySprite :: Sprite
-createEmptySprite = Sprite Seq.empty 0 (mkArea 0 0 0 0) 
+createEmptySprite = Sprite Seq.empty 0 (mkArea 0 0 0 0)
 
 -- | ajouter une image à un Niveau
 addImage :: Sprite -> Image -> Sprite
-addImage sp@(Sprite { images=is }) img = sp { images = is :|> img }
+addImage sp@Sprite { images=is } img = sp { images = is :|> img }
 
 -- | changer l'image d'un Niveau  (par son numéro)
 changeImage :: Sprite -> Int -> Sprite
-changeImage sp@(Sprite { images = imgs }) new
-  | Seq.null imgs = error $ "Cannot change sprite image, no image in sprite"
-  | (new < 0) || (new > Seq.length imgs) = error $ "Cannot change sprite image, bad index: " <> (show new)
+changeImage sp@Sprite { images = imgs } new
+  | Seq.null imgs = error "Cannot change sprite image, no image in sprite"
+  | (new < 0) || (new > Seq.length imgs) = error $ "Cannot change sprite image, bad index: " <> show new
   | otherwise = sp { current= new }
 
 -- | cycler l'image d'un Niveau
 cycleImage :: Sprite -> Sprite
-cycleImage sp@(Sprite { images = imgs, current = cur }) =
+cycleImage sp@Sprite { images = imgs, current = cur } =
   let new = if cur == Seq.length imgs - 1 then 0 else cur + 1
   in changeImage sp new
 
@@ -75,26 +72,25 @@ resizeArea rect@(Rectangle p _) w h = Rectangle p (V2 w h)
 
 -- | déplacement d'un Niveau
 moveTo :: Sprite -> CInt -> CInt -> Sprite
-moveTo sp@(Sprite { destArea = dest }) x y = sp { destArea = moveArea dest x y }
+moveTo sp@Sprite { destArea = dest } x y = sp { destArea = moveArea dest x y }
 
 -- | mise à l'échelle d'un Niveau
 scale :: Sprite -> CInt -> CInt -> Sprite
-scale sp@(Sprite { destArea = dest}) w h = sp { destArea = resizeArea dest w h }
+scale sp@Sprite { destArea = dest} w h = sp { destArea = resizeArea dest w h }
 
--- | récupération de l'image courante d'un Nive
+-- | récupération de l'image courante d'un Niveau
 currentImage :: Sprite -> Image
 currentImage (Sprite imgs cur _) = Seq.index imgs cur
 
--- | échelle par défaut du lutin, en fonction de son image courante
+-- | échelle par défaut du lemming, en fonction de son image courante
 defaultScale :: Sprite -> Sprite
 defaultScale sp = case currentImage sp of
                     (Image _ (Rectangle _ (V2 w h))) -> scale sp w h
 
--- | affichage d'un lutin sur le `renderer` SDL2
+-- | affichage d'un lemming sur le `renderer` SDL2
 displaySprite :: Renderer -> TextureMap -> Sprite -> IO ()
 displaySprite rdr tmap sp@(Sprite imgs cur dest) =
   case currentImage sp of
     (Image tid src) -> do
       let txt = TM.fetchTexture tid tmap
       R.copy rdr txt Nothing (Just dest)
-

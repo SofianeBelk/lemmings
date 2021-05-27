@@ -1,4 +1,3 @@
-
 module TextureMap where
 
 import Control.Monad
@@ -47,8 +46,7 @@ destroyTexture tid tmap = case M.lookup tid tmap of
                             Just txt -> do
                               let tmap' = M.delete tid tmap
                               R.destroyTexture txt
-                              pure $ tmap'
-
+                              pure tmap'
 
 -- | Destruction de la map des textures
 destroyTextureMap :: TextureMap -> IO TextureMap

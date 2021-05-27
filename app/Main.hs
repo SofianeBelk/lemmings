@@ -85,7 +85,7 @@ main = do
 
     let kbd = K.createKeyboard
     let ms = M.createMouse
-    gameLoop (l,h) (-1) tileSizeX tileSizeY 60 (makeEtat niveau 6) rdr tmap smap ms kbd 0
+    gameLoop (l,h) (-1) tileSizeX tileSizeY 60 (makeEtat niveau) rdr tmap smap ms kbd 0
 
 gagne :: Either Fin Etat -> Bool
 gagne e = case e of
@@ -116,7 +116,6 @@ gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> Int -> Int -> a -> Eta
 gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap smap ms kbd nb_tours = do
     -- print etat
     let etat' = Etat.selectLemming clickedLem etat
-    print clickedLem
     startTime <- time
     events <- pollEvents
     let ms' = M.handleEvents events ms
@@ -169,18 +168,12 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
                                                                                             gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
                                                                 )
     unless (M.mousepressed (fromIntegral x, fromIntegral y) ms') (
-        if gagne newEtat then do
-            print "GAGNE"
-            return ()
-            else
-                if perdu newEtat then do
-                    print "PERDU"
-                    return ()
-                    else
-                            gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
+        if gagne newEtat || perdu newEtat then (do
+            case newEtat of
+                Left e -> print e
+            return ()) else
+                    gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
                 )
-
-
 
 
 loadAssets :: Int -> Int -> Renderer -> IO(TextureMap, SpriteMap)

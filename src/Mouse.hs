@@ -8,14 +8,11 @@ import Data.Set (Set)
 import qualified Data.Set as S
 
 -- Mouse
-
 type Mouse = Set (Integer , Integer)
 
 -- Constructeur Mouse
-
 createMouse :: Mouse
 createMouse = S.empty
-
 
 handleEvent :: Event -> Mouse -> Mouse
 handleEvent event m =
@@ -33,7 +30,6 @@ handleEvent event m =
 -- | prise en compte des événements SDL2 pour mettre à jour l'état de la sourie
 handleEvents :: [Event] -> Mouse -> Mouse
 handleEvents events kbd = foldl' (flip handleEvent) kbd events
-
 
 -- | Vérifies si les coordonées  spécifier est actuellement
 -- | actif sur la sourie.

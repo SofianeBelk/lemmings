@@ -7,7 +7,6 @@ import Niveau
 import Lemmings
 import Coord
 
-
 tourMoteur :: Int -> Etat -> IO(Either Fin (Int,Etat))
 tourMoteur n e = case tourEtat n e of
                     Left f -> do
