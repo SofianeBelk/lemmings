@@ -39,6 +39,7 @@ nbLemmings = 6          -- Nombre initial de Lemmings dans le niveau
 
 Pour modifier le comportement d'un *lemming*, faites un click de souris dessus et appuyez sur une des touches :
 
+* **w** : le lemming devient un *Demineur*, dès qu'il passe sur une mine, il la désactive et redevient *Marcheur*
 * **x** : le lemming devient un *Exploseur*, il explose en détruisant toutes les cases en *terre* qui l'entourent et tue les lemmings qui sont à côté de lui.
 * **c** : le lemming devient un *Creuseur*, si la case du bas à côté de lui est en *terre* il la détruit.
 * **v** : le lemming devient un *Bloqueur*, il empêche les autres lemmings de passer pendant 8 tours de jeu.
