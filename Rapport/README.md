@@ -151,11 +151,21 @@ Invariants du type *Etat* :
 
 Pré-conditions des fonctions :
 
-* ...
+* makeEtat : le niveau respecte ses invariants.
+* tourLemming : l'identifiant est positif et le lemming et l'état vérifie leurs invariants.
+* tourEntite : l'identifiant est positif et l'état vérifie ses invariants.
+* ajouterLemming : l'état vérifie ses invariants.
+* tourEtat : le numéro du tour est positif et l'état vérifie ses invariants.
+* selectLemming : l'identifiant est positif et l'état vérifie ses invariants.
 
 Post-conditions des fonctions :
 
-* ...
+* makeEtat : l'etat respecte ses invariants.
+* tourLemming : l'état vérifie ses invariants.
+* tourEntite : l'état vérifie ses invariants.
+* ajouterLemming : l'état vérifie ses invariants, le nombre de lemmings restants est decrémenté et des lemmings vivants incrémenté.
+* tourEtat : l'état vérifie ses invariants.
+* selectLemming : l'état vérifie ses invariants et le lemmings associé à l'identifiant est selectionné.
 
 ### Lemmings
 
