@@ -1,28 +1,45 @@
 module Coord where
 
+-- Coord
+
 data Coord = C Int Int
             deriving Eq
+
+
+-- Constructeur Coord "Constructeur not smart"
+
+initCoord :: Int -> Int -> Coord
+initCoord x y = C x y
+
+-- Invariant Coord
 
 prop_coordInv :: Coord -> Bool                  
 prop_coordInv (C x y) = x >= 0 && y >= 0
 
--- >>> prop_coordInv (C 0 0)
--- True
--- >>> prop_coordInv (C 3 5)
--- True
--- >>> prop_coordInv (C (-1) 3)
--- False
--- >>> prop_coordInv (C 0 (-1))
--- False
+-- post constructeur
+
+prop_PostInitCoord :: Int -> Int -> Bool
+prop_PostInitCoord x y = prop_coordInv (initCoord x y)
+
+
+-- Instanciation show
 
 instance Show Coord where
         show (C x y)= "("++show x++","++show y++")"
 
+
+-- Instanciation ord
 instance Ord Coord where  
         (<=) (C x1 y1) (C x2 y2) = (y1 > y2) || (y1==y2 && x1<=x2)
 
+
+-- Deplacement
+
 data Deplacement = N | G | D | H | B | GH | GB | DH | DB
                    deriving (Eq, Show)
+
+
+
 
 bougeCoord :: Deplacement -> Coord -> Coord
 bougeCoord N c = c
@@ -34,6 +51,8 @@ bougeCoord GH c = haut (gauche c)
 bougeCoord GB c = bas (gauche c)
 bougeCoord DH c = haut (droite c)
 bougeCoord DB c = bas (droite c)
+
+-- Fonctions utilitaires
 
 bas :: Coord -> Coord
 bas (C x y) = C x (y-1)
@@ -47,28 +66,32 @@ gauche (C x y) = C (x-1) y
 droite :: Coord -> Coord
 droite (C x y) = C (x+1) y
 
+-- Propriétés bougeCoord
+
 prop_bougeCoordDroitGauche :: Coord -> Bool
 prop_bougeCoordDroitGauche (C x y) =   bougeCoord G (bougeCoord D (C x y)) == C x y
+
+
 prop_bougeCoordGaucheDroite :: Coord -> Bool
 prop_bougeCoordGaucheDroite (C x y) =   bougeCoord D (bougeCoord G (C x y)) == C x y
+
+
 prop_bougeCoordGaucheHaut :: Coord -> Bool
 prop_bougeCoordGaucheHaut (C x y) =   bougeCoord H (bougeCoord G (C x y)) == bougeCoord GH (C x y)
+
+
 prop_bougeCoordDroiteBas :: Coord -> Bool
 prop_bougeCoordDroiteBas (C x y) =   bougeCoord B (bougeCoord D (C x y)) == bougeCoord DB (C x y)
 
--- >>> prop_bougeCoordDroitGauche (C 4 5)
--- True
--- >>> prop_bougeCoordGaucheDroite (C 4 1)
--- True
--- >>> prop_bougeCoordGaucheHaut (C 3 2)
--- True
--- >>> prop_bougeCoordDroiteBas (C 5 4)
--- True
+
+-- Classe Placable
 
 class Placable a where
         coordP :: a -> Coord
         bougeP :: Deplacement -> a -> a
         deplaceP :: Coord -> a -> a
+
+-- Loi placable
 
 prop_placableLaw :: (Placable a , Eq a)=> a -> Bool
 prop_placableLaw v = let (C x y) = coordP v in

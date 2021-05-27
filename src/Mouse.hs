@@ -7,13 +7,15 @@ import Data.List (foldl')
 import Data.Set (Set)
 import qualified Data.Set as S
 
-
+-- Mouse
 
 type Mouse = Set (Integer , Integer)
 
--- | création de la structure d'état de clavier (vide)
+-- Constructeur Mouse
+
 createMouse :: Mouse
 createMouse = S.empty
+
 
 handleEvent :: Event -> Mouse -> Mouse
 handleEvent event m =
@@ -27,13 +29,14 @@ handleEvent event m =
                 S.delete (fromIntegral x, fromIntegral y)  m
            else m
     _ -> m
--- | prise en compte des événements SDL2 pour mettre à jour l'état du clavier
+
+-- | prise en compte des événements SDL2 pour mettre à jour l'état de la sourie
 handleEvents :: [Event] -> Mouse -> Mouse
 handleEvents events kbd = foldl' (flip handleEvent) kbd events
 
 
--- | Vérifies sir le *keycode* spécificé est actuellement
--- | actif sur le clavier.
+-- | Vérifies si les coordonées  spécifier est actuellement
+-- | actif sur la sourie.
 mousepressed :: (Integer, Integer) -> Mouse -> Bool
 mousepressed = S.member
 
