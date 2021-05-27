@@ -126,3 +126,22 @@ ajouteEntite ent (Environnement h l ents cases) = Environnement h l nents ncases
                                         where nents = ent S.:<| ents
                                               ncases = M.insert (coordP ent) (ent S.:<| cents) cases
                                                 where cents = Y.fromMaybe S.empty $ M.lookup (coordP ent) cases
+
+tuerEntiteCase :: Coord -> Environnement -> Environnement
+tuerEntiteCase co e@(Environnement h l ents cases) = case M.lookup co cases of
+                        Just seq -> S.foldlWithIndex (\envi _ (Lem id _) -> case appliqueIdEnv id (const (Lem id (Mort co))) envi of
+                                                                                Right envi' -> envi'
+                                                                                Left _ -> envi) e seq
+                        _ -> e
+
+explosion :: Coord -> Environnement -> Environnement
+explosion co envi = let envi1 = tuerEntiteCase co envi in
+                            let envi2 = tuerEntiteCase (bas co) envi1 in
+                                let envi3 = tuerEntiteCase (haut co) envi2 in
+                                    let envi4 = tuerEntiteCase (gauche co) envi3 in
+                                        let envi5 = tuerEntiteCase (droite co) envi4 in
+                                            let envi6 = tuerEntiteCase (droite (bas co)) envi5 in
+                                                let envi7 = tuerEntiteCase (gauche (bas co)) envi6 in
+                                                    let envi8 = tuerEntiteCase (droite (haut co)) envi7 in
+                                                        tuerEntiteCase (gauche (haut co)) envi8
+                            

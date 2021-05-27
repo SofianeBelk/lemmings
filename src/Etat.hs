@@ -170,7 +170,7 @@ tourLemming n (Exploseur i c) etat@(Etat envi niv r v s)
                                                                 Right e -> Etat e niv r v s
                                                                 Left _ -> etat
                 |otherwise = case appliqueIdEnv n (const (Lem n (Mort c))) envi of
-                                                                Right e -> Etat e (exploserCase c niv) r (v-1) s
+                                                                Right e -> Etat (explosion c e) (exploserCase c niv) r (v-1) s
                                                                 Left _ -> etat
 
 tourLemming n (Bloqueur d i c) etat@(Etat envi niv r v s)
