@@ -1,6 +1,8 @@
 # Rapport du projet Lemmings
 
-# Organisation du projet
+## Manuel d'utilisation
+
+### Organisation du projet
 
 Vous trouverez dans le projet les répertoires :
 
@@ -10,7 +12,7 @@ Vous trouverez dans le projet les répertoires :
 * **src** : qui contient le code source du projet.
 * **test** : qui contient l'ensemble des tests du projet.
 
-# Creation d'un niveau
+### Creation d'un niveau
 
 Pour créer un niveau, chaque case doit correspondre à une des lettres :
 
@@ -56,11 +58,11 @@ X                             SX
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-## Lancement du jeu
+### Lancement du jeu
 
 Pour lancer le jeu, il suffit de lancer la commande `stack run lib/XXXX.txt` (remplacer `XXXX.txt` par un nom de fichier valide).
 
-## Comment jouer 
+### Comment jouer 
 
 Pour modifier le comportement d'un *lemming*, il suffit de faire un click de souris dessus et appuyez sur une des touches :
 
@@ -71,4 +73,12 @@ Pour modifier le comportement d'un *lemming*, il suffit de faire un click de sou
 * **b** : le lemming devient un *Constructeur*, si la case à côté de lui est vide, il pose un bloque en *terre*.
 * **n** : le lemming devient un *Boucheur*, il bouche tout les vides sur lesquels il passe jusqu'à vider son inventaire (pour changer la taille de son inventaire, changer la valeur de retour de `poseMax`).
 * **Esc** : pour quitter le jeu.
+
+### Tests
+ 
+Pour lancer les tests il suffit de lancer la commande `stack test`.
+
+
+
+
 
