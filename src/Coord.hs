@@ -65,6 +65,8 @@ prop_bougeCoordGaucheHaut (C x y) =   bougeCoord H (bougeCoord G (C x y)) == bou
 prop_bougeCoordDroiteBas :: Coord -> Bool
 prop_bougeCoordDroiteBas (C x y) =   bougeCoord B (bougeCoord D (C x y)) == bougeCoord DB (C x y)
 
+prop_deplacement_inv :: Coord -> Bool
+prop_deplacement_inv c = prop_bougeCoordDroitGauche c && prop_bougeCoordGaucheDroite c && prop_bougeCoordGaucheHaut c && prop_bougeCoordDroiteBas c
 
 -- Classe Placable
 class Placable a where

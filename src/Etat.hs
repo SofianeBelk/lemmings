@@ -38,8 +38,14 @@ showFin :: Fin -> String
 showFin (Victoire s) = "Victoire avec " <> show (s*100 `div` nbLemmings) <> "% des lemmings."
 showFin Defaite = "Defaite"
 
+prop_pre_makeEtat :: Niveau -> Bool
+prop_pre_makeEtat = prop_niveau_inv
+
 makeEtat :: Niveau -> Etat
 makeEtat niv@(Niveau h l cases) = Etat (makeEnvironnement h l) niv nbLemmings 0 0
+
+prop_post_makeEtat :: Niveau -> Bool
+prop_post_makeEtat niv= prop_etat_inv (makeEtat niv)
 
 instance Show Fin where
   show = showFin
@@ -53,6 +59,9 @@ showEtat e = rassembleEntNiv (show (enviE e)) (show (niveauE e))
 
 instance Show Etat where
     show etat =  showEtat etat
+
+prop_pre_tourLemming :: Int -> Lemming -> Etat -> Bool
+prop_pre_tourLemming n l etat = n >= 0 && prop_lemming_inv l && prop_etat_inv etat
 
 tourLemming :: Int -> Lemming -> Etat -> Etat
 
@@ -236,10 +245,22 @@ tourLemming n (Demineur Droite c) etat@(Etat envi niv r v s)  = case coordSortie
                                                                                                         Right e -> Etat e niv r v s
                                                                                                         Left _ -> etat
 
+prop_post_tourLemming :: Int -> Lemming -> Etat -> Bool
+prop_post_tourLemming n l etat = prop_etat_inv (tourLemming n l etat)
+
+prop_pre_tourEntite :: Int -> Etat -> Bool
+prop_pre_tourEntite n etat = n >= 0 && prop_etat_inv etat
+
 tourEntite :: Int -> Etat -> Etat
 tourEntite n etat = case trouveIdEnvi n (enviE etat) of
                     Nothing -> etat
                     Just (Lem _ l) -> tourLemming n l etat
+
+prop_post_tourEntite :: Int -> Etat -> Bool
+prop_post_tourEntite n etat = prop_etat_inv (tourEntite n etat)
+
+prop_pre_ajouterLemming :: Etat -> Bool
+prop_pre_ajouterLemming etat = prop_etat_inv (ajouterLemming etat)
 
 ajouterLemming :: Etat -> Etat
 ajouterLemming (Etat envi niv r v s) = case coordEntree niv of
@@ -247,6 +268,12 @@ ajouterLemming (Etat envi niv r v s) = case coordEntree niv of
                                 Just c -> Etat nenvi niv (r-1) (v+1) s
                                  where nenvi = ajouteEntite nlem envi
                                        nlem = Lem (nouveauId envi) (Tombeur Droite hauteurMax c)
+
+prop_post_ajouterLemming :: Etat -> Bool
+prop_post_ajouterLemming etat@(Etat _ _ r v _) = let etat'@(Etat _ _ r' v' _) = ajouterLemming etat in prop_etat_inv etat' && r' == r - 1 && v' == v + 1
+
+prop_pre_tourEtat :: Int -> Etat -> Bool
+prop_pre_tourEtat n etat = n >= 0 && prop_etat_inv etat
 
 tourEtat :: Int -> Etat -> Either Fin Etat
 tourEtat t e = verif . pop $ foldr etape e (entitesEnvironnement (enviE e))
@@ -257,7 +284,14 @@ tourEtat t e = verif . pop $ foldr etape e (entitesEnvironnement (enviE e))
                                     then if nbLemmingsSortis et > 0 then Left $ Victoire $ nbLemmingsSortis et
                                         else Left Defaite
                                     else Right et
+   
+prop_post_tourEtat :: Int -> Etat -> Bool
+prop_post_tourEtat n etat = case tourEtat n etat of
+                                Left _ -> True
+                                Right etat' -> prop_etat_inv etat'
 
+prop_pre_selectLemming :: Int -> Etat -> Bool
+prop_pre_selectLemming id etat = id >= 0 && prop_etat_inv etat
 
 selectLemming :: Int -> Etat -> Etat
 selectLemming id etat@(Etat envi niv r m s) = case Environnement.trouveIdSeq id (entitesEnvironnement (enviE etat)) of
@@ -268,6 +302,12 @@ selectLemming id etat@(Etat envi niv r m s) = case Environnement.trouveIdSeq id 
                                 _ -> etat
                             Nothing -> etat
 
+prop_post_selectLemming :: Int -> Etat -> Bool
+prop_post_selectLemming id etat = let etat' = selectLemming id etat in 
+                                        prop_etat_inv etat' &&
+                                                case Seq.lookup id (entitesEnvironnement (enviE etat')) of
+                                                        Just (Lem id (Marcheur _ _ se )) -> se
+                                                        _ -> False
 
 playLemming ::  Int -> Etat -> Keyboard -> Either Fin Etat
 playLemming id etat@(Etat envi niv r v s) kbd =

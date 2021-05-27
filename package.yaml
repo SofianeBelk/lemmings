@@ -29,6 +29,7 @@ dependencies:
 - keys
 - ansi-terminal
 - StateVar
+- QuickCheck
 
 
 default-extensions:

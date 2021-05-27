@@ -136,21 +136,62 @@ dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns ==
 terre :: Coord -> Niveau -> Bool 
 terre c (Niveau _ _ cns) = Map.lookup c cns == Just Terre
 
+prop_pre_supprimerCase :: Coord -> Niveau -> Bool
+prop_pre_supprimerCase c (Niveau _ _ cns) = case Map.lookup c cns of 
+                                                Just Terre ->  True 
+                                                _ -> False
+
 supprimerCase :: Coord -> Niveau -> Niveau
 supprimerCase c (Niveau h l casesNiveau) = Niveau h l (Map.insert c Vide casesNiveau)
 
+prop_post_supprimerCase :: Coord -> Niveau -> Bool
+prop_post_supprimerCase c niv@(Niveau _ _ cns) = let (Niveau _ _ cns') = supprimerCase c niv in
+                                                    case Map.lookup c cns' of 
+                                                        Just Vide -> True 
+                                                        _ -> False
+
+prop_pre_poserCase :: Coord -> Niveau -> Bool
+prop_pre_poserCase co (Niveau h l casesNiveau) = case Map.lookup co casesNiveau of 
+                                                Just Vide ->  True 
+                                                _ -> False
+
 poserCase :: Coord -> Niveau -> Niveau
 poserCase co (Niveau h l casesNiveau) = Niveau h l (Map.insert co Terre casesNiveau)
+
+prop_post_poserCase :: Coord -> Niveau -> Bool
+prop_post_poserCase c niv@(Niveau _ _ cns) = let (Niveau _ _ cns') = poserCase c niv in
+                                                    case Map.lookup c cns' of 
+                                                        Just Terre -> True 
+                                                        _ -> False
+prop_pre_activerMine :: Coord -> Niveau -> Bool 
+prop_pre_activerMine co (Niveau h l casesNiveau) = case Map.lookup co casesNiveau of 
+                                                Just Mine ->  True 
+                                                _ -> False
 
 activerMine :: Coord -> Niveau -> Niveau
 activerMine co niv@(Niveau h l casesNiveau) = case Map.lookup co casesNiveau of
                                             Just Mine -> Niveau h l (Map.insert co MineActive casesNiveau)
                                             _ -> niv
 
+prop_post_activerMine :: Coord -> Niveau -> Bool 
+prop_post_activerMine co (Niveau h l casesNiveau) = case Map.lookup co casesNiveau of 
+                                                Just MineActive ->  True 
+                                                _ -> False
+
+prop_pre_desactiverMine :: Coord -> Niveau -> Bool 
+prop_pre_desactiverMine co (Niveau h l casesNiveau) = case Map.lookup co casesNiveau of 
+                                                Just MineActive ->  True 
+                                                _ -> False
+
 desactiverMine :: Coord -> Niveau -> Niveau
 desactiverMine co niv@(Niveau h l casesNiveau) = case Map.lookup co casesNiveau of
                                             Just Mine -> Niveau h l (Map.insert co Terre casesNiveau)
                                             _ -> niv
+
+prop_post_desactiverMine :: Coord -> Niveau -> Bool 
+prop_post_desactiverMine co (Niveau h l casesNiveau) = case Map.lookup co casesNiveau of 
+                                                Just Terre ->  True 
+                                                _ -> False
 
 exploserCase :: Coord -> Niveau -> Niveau
 exploserCase c (Niveau h l casesNiveau) = let m = (case Map.lookup (haut c) casesNiveau of
@@ -182,8 +223,31 @@ exploserCase c (Niveau h l casesNiveau) = let m = (case Map.lookup (haut c) case
                                                                                 _ -> m8 )in
                                                                             Niveau h l m9
 
+prop_post_exploserCase :: Coord -> Niveau -> Bool
+prop_post_exploserCase c (Niveau h l cns) = Map.lookup c cns /= Just Terre &&
+                                                 Map.lookup (gauche c) cns /= Just Terre &&
+                                                  Map.lookup (droite c) cns /= Just Terre &&
+                                                   Map.lookup (haut c) cns /= Just Terre &&
+                                                    Map.lookup (bas c) cns /= Just Terre &&
+                                                     Map.lookup (gauche (haut c)) cns /= Just Terre &&
+                                                      Map.lookup (gauche (bas c)) cns /= Just Terre &&
+                                                        Map.lookup (droite (haut c)) cns /= Just Terre &&
+                                                            Map.lookup (droite (bas c)) cns /= Just Terre
+
+prop_pre_bloquer :: Coord -> Niveau -> Bool
+prop_pre_bloquer co (Niveau h l casesNiveau) = Map.lookup co casesNiveau == Just Vide
+
 bloquer :: Coord -> Niveau -> Niveau
 bloquer co (Niveau h l casesNiveau) = Niveau h l (Map.insert co Blocked casesNiveau)
 
+prop_post_bloquer :: Coord -> Niveau -> Bool
+prop_post_bloquer co (Niveau h l casesNiveau) = Map.lookup co casesNiveau == Just Blocked
+
+prop_pre_debloquer :: Coord -> Niveau -> Bool
+prop_pre_debloquer co (Niveau h l casesNiveau) = Map.lookup co casesNiveau == Just Blocked
+
 debloquer :: Coord -> Niveau -> Niveau
 debloquer co (Niveau h l casesNiveau) = Niveau h l (Map.insert co Vide casesNiveau)
+
+prop_post_debloquer :: Coord -> Niveau -> Bool
+prop_post_debloquer co (Niveau h l casesNiveau) = Map.lookup co casesNiveau == Just Vide

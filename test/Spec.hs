@@ -1,2 +1,8 @@
+import Test.Hspec
+
+import CoordSpec as CS 
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main = hspec $ do
+    CS.coordSpecGenOK
+    CS.deplacementBougeCoordSpec
