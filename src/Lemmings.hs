@@ -7,43 +7,48 @@ import qualified Data.Map as Map
 data Direction = Gauche | Droite
                 deriving (Show, Eq)
 
-data Lemming =  Mort Coord Bool
+data Lemming =  Mort Coord
               | Marcheur Direction Coord Bool
-              | Creuseur Direction Int Coord Bool
-              | Poseur Direction Coord Bool
-              | Tombeur Direction Int Coord Bool
+              | Creuseur Direction Int Coord
+              | Constructeur Direction Int Coord
+              | Exploseur Int Coord
+              | Tombeur Direction Int Coord
               deriving Eq
 
 -- constructeur lemming
 
 makeMort :: Coord -> Lemming
-makeMort c = Mort c False
+makeMort = Mort
 
 makeMarcheur :: Direction -> Coord -> Lemming
 makeMarcheur d c = Marcheur d c False
 
 makeCreuseur :: Direction -> Int -> Coord -> Lemming
-makeCreuseur d n c = Creuseur d n c False
+makeCreuseur = Creuseur
 
-makePoseur :: Direction -> Coord -> Lemming
-makePoseur d c = Poseur d c False
+makeConstructeur :: Direction -> Int -> Coord -> Lemming
+makeConstructeur = Creuseur
+
+makeExploseur ::  Int -> Coord -> Lemming
+makeExploseur = Exploseur
 
 makeTombeur :: Direction -> Int -> Coord -> Lemming
-makeTombeur d i c = Tombeur d i c False
+makeTombeur = Tombeur
 
 -- Invariant lemming
 
 prop_lemmingInv :: Lemming -> Bool
-prop_lemmingInv (Mort c _) = prop_coordInv c
+prop_lemmingInv (Mort c) = prop_coordInv c
 prop_lemmingInv (Marcheur _ c _) = prop_coordInv c
-prop_lemmingInv (Creuseur _ _ c _) = prop_coordInv c
-prop_lemmingInv (Poseur _ c _) = prop_coordInv c
-prop_lemmingInv (Tombeur _ n c _) = prop_coordInv c && n > 0
+prop_lemmingInv (Creuseur _ _ c) = prop_coordInv c
+prop_lemmingInv (Constructeur _ _ c) = prop_coordInv c
+prop_lemmingInv (Exploseur _ c) = prop_coordInv c
+prop_lemmingInv (Tombeur _ n c) = prop_coordInv c && n > 0
 
 -- Instanciation show
 
 instance Show Lemming where 
-    show (Mort _ _) = "+"
+    show (Mort _) = "+"
 
     show (Marcheur Gauche _ False) = "<"
     show (Marcheur Droite _ False) = ">"
@@ -51,45 +56,44 @@ instance Show Lemming where
     show (Marcheur Droite _ True) = ">'"
     show (Marcheur Gauche _ True) = "<'"
 
+    show (Creuseur Gauche _ _) = "C"
+    show (Creuseur Droite _ _) = "c"
 
-    show (Creuseur Gauche _ _ False) = "C"
-    show (Creuseur Droite _ _ False) = "c"
+    show (Constructeur Gauche _ _) = "B"
+    show (Constructeur Droite _ _) = "b"
 
-    show (Creuseur Gauche _ _ True) = "C'"
-    show (Creuseur Droite _ _ True) = "c'"
+    show Exploseur {} = "Ex"
 
-    show Poseur {} = "P"
-
-    show (Tombeur Gauche _ _ False) = "V"
-    show (Tombeur Droite _ _ False) = "v"
-
-    show (Tombeur Gauche _ _ True) = "V'"
-    show (Tombeur Droite _ _ True) = "v'"
+    show (Tombeur Gauche _ _) = "V"
+    show (Tombeur Droite _ _) = "v"
 
 -- pour les propriétes ces fonctions doivent vérifier la loi de placable : prop_placableLaw
 
 coordLemming :: Lemming -> Coord
-coordLemming (Mort c _) = c
+coordLemming (Mort c) = c
 coordLemming (Marcheur _ c _) = c
-coordLemming (Creuseur _ _ c _) = c
-coordLemming (Poseur _ c _) = c
-coordLemming (Tombeur _ _ c _) = c
+coordLemming (Creuseur _ _ c) = c
+coordLemming (Constructeur _ _ c) = c
+coordLemming (Exploseur _ c) = c
+coordLemming (Tombeur _ _ c) = c
 
 bougeLemming :: Deplacement -> Lemming -> Lemming
-bougeLemming _ (Mort c s) = Mort c s
+bougeLemming _ (Mort c) = Mort c
 bougeLemming d (Marcheur di c s)
     |d == G || d == GH = Marcheur Gauche (bougeCoord d c) s
     |d == D || d == DH = Marcheur Droite (bougeCoord d c) s
 bougeLemming _ c@Creuseur {} = c
-bougeLemming _(Poseur di c s) = Poseur di c s
-bougeLemming _ (Tombeur di n c s) = Tombeur di (n-1) (bougeCoord B c) s
+bougeLemming _ c@Constructeur {} = c
+bougeLemming _ e@(Exploseur _ _) = e
+bougeLemming _ (Tombeur di n c) = Tombeur di (n-1) (bougeCoord B c)
 
 deplaceLemming :: Coord -> Lemming -> Lemming
-deplaceLemming _ (Mort c s) = Mort c s
+deplaceLemming _ (Mort c) = Mort c
 deplaceLemming co (Marcheur d _ s) = Marcheur d co s
-deplaceLemming co (Creuseur d n _ s) = Creuseur d n co s
-deplaceLemming co (Poseur d _ s) = Poseur d co s
-deplaceLemming co (Tombeur d n _ s) = Tombeur d n co s
+deplaceLemming co (Creuseur d n _) = Creuseur d n co
+deplaceLemming co (Constructeur d n _) = Creuseur d n co
+deplaceLemming co (Exploseur n _) = Exploseur n co
+deplaceLemming co (Tombeur d n _) = Tombeur d n co
 
 instance Placable Lemming where 
     coordP = coordLemming

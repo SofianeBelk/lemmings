@@ -5,11 +5,10 @@ module Coord where
 data Coord = C Int Int
             deriving Eq
 
-
 -- Constructeur Coord "Constructeur not smart"
 
 initCoord :: Int -> Int -> Coord
-initCoord x y = C x y
+initCoord = C
 
 -- Invariant Coord
 
@@ -37,9 +36,6 @@ instance Ord Coord where
 
 data Deplacement = N | G | D | H | B | GH | GB | DH | DB
                    deriving (Eq, Show)
-
-
-
 
 bougeCoord :: Deplacement -> Coord -> Coord
 bougeCoord N c = c

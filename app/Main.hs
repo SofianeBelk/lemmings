@@ -271,52 +271,42 @@ loadAssets tileSizeX tileSizeY rdr = do
     (tmap, smap) <- loadAsset "<'6" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/6.bmp" tmap smap
     (tmap, smap) <- loadAsset "<'7" tileSizeX tileSizeY rdr "assets/lemming_walk_l_clicked/7.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "V'" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'0" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'1" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'2" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'3" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'4" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'5" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'6" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "V'7" tileSizeX tileSizeY rdr "assets/lemming_fall_l_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b" tileSizeX tileSizeY rdr "assets/lemming_build_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b0" tileSizeX tileSizeY rdr "assets/lemming_build_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b1" tileSizeX tileSizeY rdr "assets/lemming_build_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b2" tileSizeX tileSizeY rdr "assets/lemming_build_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b3" tileSizeX tileSizeY rdr "assets/lemming_build_r/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b4" tileSizeX tileSizeY rdr "assets/lemming_build_r/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b5" tileSizeX tileSizeY rdr "assets/lemming_build_r/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b6" tileSizeX tileSizeY rdr "assets/lemming_build_r/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "b7" tileSizeX tileSizeY rdr "assets/lemming_build_r/7.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "v'" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'0" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'1" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'2" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'3" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'4" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'5" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'6" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "v'7" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B" tileSizeX tileSizeY rdr "assets/lemming_build_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B0" tileSizeX tileSizeY rdr "assets/lemming_build_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B1" tileSizeX tileSizeY rdr "assets/lemming_build_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B2" tileSizeX tileSizeY rdr "assets/lemming_build_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B3" tileSizeX tileSizeY rdr "assets/lemming_build_l/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B4" tileSizeX tileSizeY rdr "assets/lemming_build_l/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B5" tileSizeX tileSizeY rdr "assets/lemming_build_l/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B6" tileSizeX tileSizeY rdr "assets/lemming_build_l/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "B7" tileSizeX tileSizeY rdr "assets/lemming_build_l/7.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "c'" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'0" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'1" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'2" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'3" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'4" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/4.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'5" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/5.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'6" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/6.bmp" tmap smap
-    (tmap, smap) <- loadAsset "c'7" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/7.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex" tileSizeX tileSizeY rdr "assets/lemming_explode/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex0" tileSizeX tileSizeY rdr "assets/lemming_explode/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex1" tileSizeX tileSizeY rdr "assets/lemming_explode/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex2" tileSizeX tileSizeY rdr "assets/lemming_explode/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex3" tileSizeX tileSizeY rdr "assets/lemming_explode/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex4" tileSizeX tileSizeY rdr "assets/lemming_explode/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex5" tileSizeX tileSizeY rdr "assets/lemming_explode/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex6" tileSizeX tileSizeY rdr "assets/lemming_explode/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "Ex7" tileSizeX tileSizeY rdr "assets/lemming_explode/7.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "C'" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'0" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'1" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'2" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'3" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'4" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/4.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'5" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/5.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'6" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/6.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'7" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/7.bmp" tmap smap
-
-    (tmap, smap) <- loadAsset "+" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset "+0" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset "+1" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset "+2" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset "+3" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset "+4" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset "+5" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    (tmap, smap) <- loadAsset "+6" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    loadAsset "+7" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+0" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+1" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+2" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+3" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+4" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+5" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+6" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap
+    loadAsset "+7" tileSizeX tileSizeY rdr "assets/lemming_dead.bmp" tmap smap

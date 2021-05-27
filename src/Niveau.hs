@@ -145,6 +145,8 @@ coordSortie (Niveau _ _ cns)  =  let c = Map.foldrWithKey (\ k y acc -> if y == 
 passable :: Coord -> Niveau -> Bool
 passable c (Niveau _ _ cns) = Map.lookup c cns == Just Vide || Map.lookup c cns == Just Entree || Map.lookup c cns == Just Sortie
 
+vide :: Coord -> Niveau -> Bool
+vide c (Niveau _ _ cns) = Map.lookup c cns == Just Vide
 
 dure :: Coord -> Niveau -> Bool
 dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre
@@ -155,3 +157,39 @@ terre c (Niveau _ _ cns) = Map.lookup c cns == Just Terre
 
 supprimerCase :: Coord -> Niveau -> Niveau
 supprimerCase c (Niveau h l casesNiveau) = Niveau h l (Map.insert (bas c) Vide casesNiveau)
+
+poserCaseDroite :: Coord -> Niveau -> Niveau
+poserCaseDroite co (Niveau h l casesNiveau) = Niveau h l (Map.insert (droite co) Terre casesNiveau)
+
+poserCaseGauche :: Coord -> Niveau -> Niveau
+poserCaseGauche co (Niveau h l casesNiveau) = Niveau h l (Map.insert (gauche co) Terre casesNiveau)
+
+exploserCase :: Coord -> Niveau -> Niveau
+exploserCase c (Niveau h l casesNiveau) = let m = (case Map.lookup (haut c) casesNiveau of
+                                                        Just Terre -> Map.insert (haut c) Vide casesNiveau
+                                                        _ -> casesNiveau )in
+                                            let m2 = (case Map.lookup (gauche c) m of
+                                                        Just Terre -> Map.insert (gauche c) Vide m
+                                                        _ -> m )in
+                                                let m3 = (case Map.lookup (bas c) m of
+                                                        Just Terre -> Map.insert (bas c) Vide m2
+                                                        _ -> m2 )in
+                                                    let m4 = (case Map.lookup (droite c) m3 of
+                                                            Just Terre -> Map.insert (droite c) Vide m3
+                                                            _ -> m3 )in
+                                                        let m5 = (case Map.lookup (gauche (bas c)) m of
+                                                                Just Terre -> Map.insert (gauche (bas c)) Vide m4
+                                                                _ -> m4 )in
+                                                            let m6 = (case Map.lookup (gauche (haut c)) m5 of
+                                                                    Just Terre -> Map.insert (gauche (haut c)) Vide m5
+                                                                    _ -> m5 )in
+                                                                let m7 = (case Map.lookup (droite (bas c)) m6 of
+                                                                        Just Terre -> Map.insert (droite (bas c)) Vide m6
+                                                                        _ -> m6 )in
+                                                                    let m8 = (case Map.lookup (droite (haut c)) m7 of
+                                                                            Just Terre -> Map.insert (droite (haut c)) Vide m7
+                                                                            _ -> m7 )in
+                                                                        let m9 = (case Map.lookup c m8 of
+                                                                                Just Terre -> Map.insert (gauche c) Vide m8
+                                                                                _ -> m8 )in
+                                                                            Niveau h l m9
