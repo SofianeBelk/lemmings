@@ -74,11 +74,18 @@ Pour modifier le comportement d'un *lemming*, il suffit de faire un click de sou
 * **n** : le lemming devient un *Boucheur*, il bouche tout les vides sur lesquels il passe jusqu'à vider son inventaire (pour changer la taille de son inventaire, changer la valeur de retour de `poseMax`).
 * **Esc** : pour quitter le jeu.
 
-### Tests
- 
+### Tests
+
 Pour lancer les tests il suffit de lancer la commande `stack test`.
 
 
+## Presentation du projet
 
+L'objectif du projet est la création d'un "*Lemmings*" en *Haskell* **sur**, en 2D en utilisant la bibliothèque *SDL2*.
 
+Dans une map, des lemmings sont générés et le joueur doit faire en sorte d'en conduire le maximum à la sortie en utilisant leurs différents potentiels au bon moment et au bon endroit.
+
+Si tout les lemmings meurent, la partie se termine et le joueur a perdu, sinon, si il arrive à en sauver quelques-uns, on parle de victoire partielle, sinon, si tout les lemmings sont sauvés, alors le joueur a gagné.
+
+Au lancement du jeu une interface graphique s'ouvre, quand on lance le niveau donné ci-dessus, on a cet affichage :
 
