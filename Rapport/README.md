@@ -122,18 +122,24 @@ Pré-conditions des fonctions :
 * trouveIdSeq : l'identifiant est positif.
 * trouveIdMap : l'identifiant est positif.
 * appliqueIdSeq : l'identifiant est positif.
-* appliqueIdEnv : l'identifiant est positif.
+* appliqueIdEnv : l'identifiant est positif et l'environnement respecte ses invariants.
 * enleveId : l'identifiant est positif.
+* enleveEnvi : l'identifiant est positif.
+* deplaceDansEnvironnement : l'identifiant est positif et la coordonnée et l'environnement respectent leurs invariants.
+* ajouteEntite : l'entité et l'environnement respectent leurs invariants.
+* tuerEntiteCase : la coordonnée et l'environnement respectent leurs invariants et le nombre de morts doit être positif.
+* explosion : la coordonnée et l'environnement respectent leurs invariants.
 
 Post-conditions des fonctions :
 
+* makeEnvironnement : l'environnement respecte ses invariants.
+* appliqueIdEnv : l'environnement respecte ses invariants.
+* enleveId : l'identifiant n'est plus dans la sequence des entités et l'environnement respecte ses invariants.
 * enleveEnvi : l'entité n'est plus dans l'environnement.
-* deplaceDansEnvironnement : l'entité est dans la sequence corréspondante à ses nouvelles coordonnées.
-* ajouteEntite : l'entité a été ajouté à l'environnement.
-
-
-
-
+* deplaceDansEnvironnement : l'entité est dans la sequence correspondante à ses nouvelles coordonnées et l'environnement respecte ses invariants.
+* ajouteEntite : l'entité a été ajouté à l'environnement et l'environnement respecte son invariant.
+* tuerEntiteCase : l'environnement respecte ses invariants et le nombre de morts est supérieur à celui donné en argument.
+* explosion : l'environnement respecte ses invariants, le nombre de morts est positif et toutes les sequence des cases qui entourent la coordonnée et la sequence de la coordonnée sont vides.
 
 ### Etat
 
