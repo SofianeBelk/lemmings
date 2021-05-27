@@ -1,10 +1,12 @@
 # Lemmings
 
-Implementation d'une mini-copie du jeu [Lemmings](https://fr.wikipedia.org/wiki/Lemmings_(jeu_vid%C3%A9o,_1991)) en *Haskell* en mettant en avant les concepts de la programmation fonctionnelle vu en cours de l'ue *Programmation avancée en Fonctionnelle* (**PAF**) en *Master 1 - STL* à *Sorbonne Université*.
+Implementation d'une mini-copie du jeu [Lemmings](https://fr.wikipedia.org/wiki/Lemmings_(jeu_vid%C3%A9o,_1991)) en *Haskell* en mettant en avant les concepts de la programmation fonctionnelle vu en cours dans le cadre de l'ue *Programmation avancée en Fonctionnelle* (**PAF**) vu en *Master 1 informatique - Science et Technologie du Logiciel* à *Sorbonne Université*.
 
 ## Installation
 
 Pour pouvoir l'executer il faut avoir préalabement installer *Stack* et la bibliothèque *SDL*.
+
+Puis exécutez les commandes :
 
 ```sh
 $ cd lemmings
@@ -15,7 +17,7 @@ $ stack run lib/XXXXX.txt
 
 Où XXXXX.txt correspond à un fichier *text* de niveau.
 
-(Si la commande `stack update` n'est pas executée, l'interface peut ne pas s'afficher.)
+(Si la commande `stack update` n'est pas executée, l'interface risque de ne pas s'afficher.)
 
 ## Paramètres du jeu
 
@@ -33,7 +35,7 @@ nbLemmings = 6          -- Nombre initial de Lemmings dans le niveau
 ````
 
 
-## Jouer
+## Comment jouer
 
 Pour modifier le comportement d'un *lemming*, faites un click de souris dessus et appuiyez sur une des touches :
 * **x** : le lemming devient un *Exploseur*, il explose en détruisant toutes les cases en *terre* qui l'entourent.
