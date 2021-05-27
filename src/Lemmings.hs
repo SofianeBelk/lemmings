@@ -51,17 +51,17 @@ makeDemineur :: Direction -> Coord -> Lemming
 makeDemineur = Demineur
 
 -- Invariant lemming
-prop_lemmingInv :: Lemming -> Bool
-prop_lemmingInv (Mort c) = prop_coordInv c
-prop_lemmingInv (Marcheur _ c _) = prop_coordInv c
-prop_lemmingInv (Creuseur _ _ c) = prop_coordInv c
-prop_lemmingInv (Constructeur _ _ c) = prop_coordInv c
-prop_lemmingInv (Exploseur _ c) = prop_coordInv c
-prop_lemmingInv (Bloqueur _ _ c) = prop_coordInv c
-prop_lemmingInv (Boucheur _ _ c) = prop_coordInv c
-prop_lemmingInv (Tombeur _ n c) = prop_coordInv c && n > 0
-prop_lemmingInv (Brule _ c) = prop_coordInv c
-prop_lemmingInv (Demineur _ c ) = prop_coordInv c
+prop_lemming_inv :: Lemming -> Bool
+prop_lemming_inv (Mort c) = prop_coord_inv c
+prop_lemming_inv (Marcheur _ c _) = prop_coord_inv c
+prop_lemming_inv (Creuseur _ _ c) = prop_coord_inv c
+prop_lemming_inv (Constructeur _ _ c) = prop_coord_inv c
+prop_lemming_inv (Exploseur _ c) = prop_coord_inv c
+prop_lemming_inv (Bloqueur _ _ c) = prop_coord_inv c
+prop_lemming_inv (Boucheur _ _ c) = prop_coord_inv c
+prop_lemming_inv (Tombeur _ n c) = prop_coord_inv c && n > 0
+prop_lemming_inv (Brule _ c) = prop_coord_inv c
+prop_lemming_inv (Demineur _ c ) = prop_coord_inv c
 
 -- Instanciation show
 instance Show Lemming where 

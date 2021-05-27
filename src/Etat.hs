@@ -22,6 +22,9 @@ data Etat = Etat{
 
 data Fin = Victoire Int | Defaite | Abandon
 
+prop_etat_inv :: Etat -> Bool
+prop_etat_inv etat = prop_envi_inv (enviE etat)  && prop_niveau_inv (niveauE etat) && nbLemmingsRestants etat + nbLemmingsVivants etat + nbLemmingsSortis etat > 0
+
 hauteurMax :: Int
 hauteurMax = 8          -- Hauteur chute maximale auquelle un Lemming peut survivre
 
@@ -32,7 +35,7 @@ nbLemmings :: Int
 nbLemmings = 6          -- Nombre initial de Lemmings dans le niveau
 
 showFin :: Fin -> String
-showFin (Victoire s) = "Victoire avec " <> show (s*100 `div` nbLemmings) <> "% des lemmings."
+showFin (Victoire s) = "Victoire avec " <> show (s*100 `div` nbLemmings) <> "% des lemmings."
 showFin Defaite = "Defaite"
 
 makeEtat :: Niveau -> Etat
@@ -246,7 +249,7 @@ ajouterLemming (Etat envi niv r v s) = case coordEntree niv of
                                        nlem = Lem (nouveauId envi) (Tombeur Droite hauteurMax c)
 
 tourEtat :: Int -> Etat -> Either Fin Etat
-tourEtat t e = (verif . pop) $ foldr etape e (entitesEnvironnement (enviE e))
+tourEtat t e = verif . pop $ foldr etape e (entitesEnvironnement (enviE e))
                 where etape enti acc = tourEntite (idEntite enti) acc
                       pop = if restants > 0 && t `mod`5 == 0 then ajouterLemming else id
                       restants = nbLemmingsRestants e

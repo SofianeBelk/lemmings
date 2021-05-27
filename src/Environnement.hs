@@ -32,27 +32,22 @@ trouveIdEnvi :: Int -> Environnement -> Maybe Entite
 trouveIdEnvi n = trouveIdSeq n . entitesEnvironnement
 
 trouveIdSeq :: Int -> S.Seq Entite -> Maybe Entite
-trouveIdSeq n = Prelude.foldr etape Nothing
-    where etape e acc = if idEntite e == n then Just e else acc
+trouveIdSeq n = Prelude.foldr (\e acc -> if idEntite e == n then Just e else acc) Nothing
 
 trouveIdMap :: Int -> M.Map Coord (S.Seq Entite) -> Maybe Coord
-trouveIdMap n = M.foldrWithKey etape Nothing
-    where etape c s acc = case trouveIdSeq n s of
-                        Nothing -> acc
-                        Just _ -> Just c
+trouveIdMap n = M.foldrWithKey (\c s acc -> case trouveIdSeq n s of
+                                                Nothing -> acc
+                                                Just _ -> Just c) Nothing
 
 prop_enviInclusion1 :: Environnement -> Bool
-prop_enviInclusion1 (Environnement _ _ ents cases) = Prelude.foldr etape True ents
-    where etape e acc = case trouveIdMap (idEntite e) cases of
-                        Nothing -> False 
-                        Just c -> c == coordP e
+prop_enviInclusion1 (Environnement _ _ ents cases) = Prelude.foldr (\e acc -> case trouveIdMap (idEntite e) cases of
+                                                                                    Nothing -> False 
+                                                                                    Just c -> c == coordP e ) True ents
 
 prop_enviInclusion2 :: Environnement -> Bool
-prop_enviInclusion2 (Environnement _ _ ents cases) = M.foldrWithKey etape True cases
-    where etape c s acc = Prelude.foldr (etape2 c) acc s
-            where etape2 c e acc = case trouveIdSeq (idEntite e) ents of
+prop_enviInclusion2 (Environnement _ _ ents cases) = M.foldrWithKey (\c s acc -> Prelude.foldr (\e acc -> case trouveIdSeq (idEntite e) ents of
                             Nothing -> False
-                            Just e2 -> acc && coordP e2 == c && coordP e2 == coordP e
+                            Just e2 -> acc && coordP e2 == c && coordP e2 == coordP e) acc s) True cases
 
 prop_envi_inv :: Environnement -> Bool
 prop_envi_inv envi = prop_enviInclusion1 envi && prop_enviInclusion2 envi
@@ -71,8 +66,8 @@ showEnvironnement (Environnement h l _ cases) = let s = aux 0 (h-1) in s
                             Just (e S.:<| es) -> show e
 
 appliqueIdSeq :: Int -> (Entite -> Entite) -> S.Seq Entite -> S.Seq Entite
-appliqueIdSeq i f = Prelude.foldr etape S.Empty 
-    where etape n acc
+appliqueIdSeq i f = Prelude.foldr aux S.Empty 
+    where aux n acc
             |idEntite n == i = f n S.:<| acc
             |otherwise = n S.:<| acc
 

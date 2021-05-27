@@ -9,13 +9,12 @@ initCoord :: Int -> Int -> Coord
 initCoord = C
 
 -- Invariant Coord
-prop_coordInv :: Coord -> Bool                  
-prop_coordInv (C x y) = x >= 0 && y >= 0
+prop_coord_inv :: Coord -> Bool                  
+prop_coord_inv (C x y) = x >= 0 && y >= 0
 
 -- post constructeur
 prop_PostInitCoord :: Int -> Int -> Bool
-prop_PostInitCoord x y = prop_coordInv (initCoord x y)
-
+prop_PostInitCoord x y = prop_coord_inv (initCoord x y)
 
 -- Instanciation show
 instance Show Coord where

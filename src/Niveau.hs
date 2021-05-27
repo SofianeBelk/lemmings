@@ -45,13 +45,9 @@ makeNiveau :: Int -> Int -> Map.Map Coord Case -> Niveau
 makeNiveau = Niveau
 
 -- Invariant Niveau
-prop_niveauInv :: Niveau -> Bool
-prop_niveauInv (Niveau h l cases) = h > 0 && l > 0 && not(Map.null cases)
-
--- Propriétés Niveau
-prop_niveau :: Niveau -> Bool
-prop_niveau n = prop_niveauEntreeSortie n && prop_niveauMetal n
-                && prop_niveauEntreeSortie2 n && prop_niveauCase n
+prop_niveau_inv :: Niveau -> Bool
+prop_niveau_inv n@(Niveau h l cases) = prop_niveauEntreeSortie n && prop_niveauMetal n
+                && prop_niveauEntreeSortie2 n && prop_niveauCase n &&h > 0 && l > 0 && not(Map.null cases)
 
 -- Propriétés 1
 prop_niveauEntreeSortie :: Niveau -> Bool
@@ -97,9 +93,8 @@ readNiveau = (\(cases, l, h) -> Niveau (h + 1) l cases) . List.foldl' aux (Map.e
                     aux (cases, x, y) c = (Map.insert (C x y) (read [c]) cases, x + 1, y)
 
 -- Post-Condition ReadNiveau
-prop_PostReadNiveau :: String -> Bool
-prop_PostReadNiveau nivChaine = case readNiveau nivChaine of
-                                     Niveau h l cns -> True
+prop_post_readNiveau :: String -> Bool
+prop_post_readNiveau nivChaine = prop_niveau_inv (readNiveau nivChaine)
 
 inverseNiveau :: Niveau -> Niveau
 inverseNiveau (Niveau h l cns) = Niveau h l $ Map.foldrWithKey etape Map.empty cns
