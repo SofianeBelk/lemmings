@@ -26,6 +26,10 @@ dependencies:
 - random
 - sdl2
 - hspec
+- keys
+- ansi-terminal
+- StateVar
+
 
 default-extensions:
   OverloadedStrings

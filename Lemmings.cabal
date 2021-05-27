@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 79670a8f4eac1e4a28f84071720a4c2ef321f7a30b047bbea703df48734bfd6e
+-- hash: 673efcd1d4262b5233d072b1671efd54473a0577becc34bfca296f0ede036a90
 
 name:           Lemmings
 version:        0.1.0.0
@@ -28,9 +28,12 @@ source-repository head
 library
   exposed-modules:
       Coord
+      Environnement
       Etat
+      Keyboard
       Lemmings
       Moteur
+      Mouse
       Niveau
       Sprite
       SpriteMap
@@ -41,9 +44,12 @@ library
       src
   default-extensions: OverloadedStrings UnicodeSyntax MultiWayIf LambdaCase DuplicateRecordFields MonadComprehensions InstanceSigs
   build-depends:
-      base >=4.7 && <5
+      StateVar
+    , ansi-terminal
+    , base >=4.7 && <5
     , containers
     , hspec
+    , keys
     , random
     , sdl2
     , text
@@ -59,9 +65,12 @@ executable Lemmings-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Lemmings
+    , StateVar
+    , ansi-terminal
     , base >=4.7 && <5
     , containers
     , hspec
+    , keys
     , random
     , sdl2
     , text
@@ -78,9 +87,12 @@ test-suite Lemmings-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Lemmings
+    , StateVar
+    , ansi-terminal
     , base >=4.7 && <5
     , containers
     , hspec
+    , keys
     , random
     , sdl2
     , text

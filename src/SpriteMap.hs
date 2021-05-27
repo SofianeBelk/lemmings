@@ -6,17 +6,22 @@ import qualified Data.Map as M
 import Sprite (Sprite)
 import qualified Sprite as S
 
+-- SpriteId
 newtype SpriteId = SpriteId String
   deriving (Eq, Ord)
 
+-- Instanciation show
 instance Show SpriteId where
   show (SpriteId id) = show id
 
+-- spriteMap
 type SpriteMap = Map SpriteId Sprite
 
+-- Constructeur
 createSpriteMap :: SpriteMap
 createSpriteMap = M.empty
 
+-- les fonctions de modification de sprite "pas de pré-condition ni de post-condition"
 addSprite :: SpriteId -> Sprite -> SpriteMap -> SpriteMap
 addSprite sid =
   M.insertWithKey (\_ _ _ -> error $ "addSprite - Sprite '" <> show sid<> "' already in sprite map.")
@@ -39,4 +44,3 @@ removeSprite :: SpriteId -> SpriteMap -> SpriteMap
 removeSprite sid smap = case M.lookup sid smap of
                           Nothing -> error $ "removeSprite - No such sprite '" <> show sid <> "' in sprite map."
                           Just _ -> M.delete sid smap
-

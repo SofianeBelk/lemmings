@@ -1,0 +1,7 @@
+ignore-project: False
+
+package *
+  ghc-options: -fPIC
+
+program-options
+  ghc-options: -fPIC
