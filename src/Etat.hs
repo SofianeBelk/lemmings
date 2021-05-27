@@ -89,14 +89,25 @@ tourLemming n (Tombeur di k c) etat@(Etat envi niv r v s) = case (dure (bas c) n
                                                                 Right e -> Etat e niv r v s
                                                                 Left _ -> etat
 
-tourLemming n (Creuseur di i c) etat@(Etat envi niv r v s) = case (terre (bas c) niv, i > 0) of
-                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Creuseur di (i-1) c ))) envi of
+tourLemming n (Creuseur Gauche i c) etat@(Etat envi niv r v s) = case (terre (gauche (bas c)) niv, i > 0) of
+                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Creuseur Gauche (i-1) c ))) envi of
                                                                 Right e -> Etat e niv r v s
                                                                 Left _ -> etat
-                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Tombeur di hauteurMax c))) envi of
-                                                                Right e -> Etat e (supprimerCase (bas c) niv) r v s
+                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False))) envi of
+                                                                Right e -> Etat e (supprimerCase (gauche (bas c)) niv) r v s
                                                                 Left _ -> etat
-                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Marcheur di c False))) envi of
+                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
+                                                                Right e -> Etat e niv r v s
+                                                                Left _ -> etat
+
+tourLemming n (Creuseur Droite i c) etat@(Etat envi niv r v s) = case (terre (droite (bas c)) niv, i > 0) of
+                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Creuseur Droite (i-1) c ))) envi of
+                                                                Right e -> Etat e niv r v s
+                                                                Left _ -> etat
+                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
+                                                                Right e -> Etat e (supprimerCase (droite (bas c)) niv) r v s
+                                                                Left _ -> etat
+                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False))) envi of
                                                                 Right e -> Etat e niv r v s
                                                                 Left _ -> etat
 
