@@ -28,3 +28,5 @@ Et le niveau doit respecter certaines propriétés :
 * L'entrée se trouve au dessus d'une case vide.
 * La sortie se trouve au dessus d'une case en métal.
 * Toutes les coordonnées comprise entre 0 et la hauteur/largeur du niveau sont associées à une case et réciproquement.
+
+
