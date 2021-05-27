@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d99cada709a02e99b0618116e21fcd798ac31f807799f8458846f070f6cc970
+-- hash: 673efcd1d4262b5233d072b1671efd54473a0577becc34bfca296f0ede036a90
 
 name:           Lemmings
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Coord
       Environnement
       Etat
+      Keyboard
       Lemmings
       Moteur
       Mouse

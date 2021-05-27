@@ -140,6 +140,10 @@ passable c (Niveau _ _ cns) = Map.lookup c cns == Just Vide || Map.lookup c cns
 
 dure :: Coord -> Niveau -> Bool
 dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns == Just Terre
+
+terre :: Coord -> Niveau -> Bool 
+terre c (Niveau _ _ cns) = Map.lookup c cns == Just Terre
+
 -- >>> dure (C 0 0) exempleNiveau
 -- True
 -- >>> dure (C 4 3) exempleNiveau
@@ -149,3 +153,6 @@ dure c (Niveau _ _ cns) = Map.lookup c cns == Just Metal || Map.lookup c cns ==
 -- >>> dure (coordSortie exempleNiveau) exempleNiveau
 -- False
 
+
+supprimerCase :: Coord -> Niveau -> Niveau
+supprimerCase c (Niveau h l casesNiveau) = Niveau h l (Map.insert (bas c) Vide casesNiveau)

@@ -27,6 +27,9 @@ import SDL
 import Mouse (Mouse)
 import qualified Mouse as M
 
+import Keyboard (Keyboard)
+import qualified Keyboard as K
+
 import TextureMap
 import qualified TextureMap as TM
 
@@ -80,9 +83,9 @@ main = do
     rdr <- createRenderer window (-1) defaultRenderer
     (tmap, smap) <- loadAssets tileSizeX tileSizeY rdr
 
-
+    let kbd = K.createKeyboard
     let ms = M.createMouse
-    gameLoop (l,h) (-1) tileSizeX tileSizeY 60 (makeEtat niveau 6) rdr tmap  smap ms 0
+    gameLoop (l,h) (-1) tileSizeX tileSizeY 60 (makeEtat niveau 6) rdr tmap smap ms kbd 0
 
 gagne :: Either Fin Etat -> Bool
 gagne e = case e of
@@ -109,21 +112,21 @@ getEtat e = case e of
                 Left f -> Nothing
 
 
-gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> Int -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Int -> IO ()
-gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap smap ms nb_tours = do
+gameLoop :: (RealFrac a, Show a) => (CInt,CInt) -> Int -> Int -> Int -> a -> Etat -> Renderer -> TextureMap -> SpriteMap -> Mouse -> Keyboard -> Int -> IO ()
+gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap smap ms kbd nb_tours = do
     -- print etat
     let etat' = Etat.selectLemming clickedLem etat
     print clickedLem
     startTime <- time
     events <- pollEvents
     let ms' = M.handleEvents events ms
+    let kbd' = K.handleEvents events kbd
+
     clear renderer
     let map = casesNiveau $ niveauE etat'
     let lems = casesEnvironnement $ enviE etat'
 
     let (width,height) = dimensions
-
-
 
     let cells = (\(C x y) c -> S.displaySprite renderer tmap (S.moveTo (SM.fetchSprite (SpriteId (show c)) smap) (fromIntegral (x*tileSizeX)) (fromIntegral ((hNiveau (niveauE etat') - y)*tileSizeY))))
     let lemmings = (\(C x y) se -> if not (Seq.null se) then
@@ -135,7 +138,6 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
                                             (SM.fetchSprite (SpriteId " ") smap)
                                                 (fromIntegral (x*tileSizeX)) (fromIntegral((hNiveau (niveauE etat') - y)*tileSizeY))))
 
-
     Key.mapWithKeyM_ cells map
     Key.mapWithKeyM_ lemmings lems
     present renderer
@@ -145,6 +147,9 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
     let delayTime = floor (((1.0 / frameRate) - refreshTime) * 1000)
     threadDelay $ delayTime * 25000
     let newEtat = tourEtat nb_tours etat
+    let newEtat' = case newEtat of
+                    Right e -> Etat.playLemming clickedLem e kbd'
+                    Left err -> etat'
     SDL.P (SDL.V2 x y) <- getAbsoluteMouseLocation
     when (M.mousepressed (fromIntegral x, fromIntegral y) ms') (let res = Map.lookup (C (fromIntegral x `div`tileSizeX) ((fromIntegral height - fromIntegral y) `div`tileSizeY + 1)) (casesEnvironnement (enviE etat)) in
                                                                  let clickedLem' = case res of
@@ -161,8 +166,7 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
                                                                                     print "PERDU"
                                                                                     return ()
                                                                                     else
-                                                                                        let etat' = Maybe.fromJust (getEtat newEtat) in
-                                                                                            gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
+                                                                                            gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
                                                                 )
     -- print (coordEntree (niveauE etat)
     unless (M.mousepressed (fromIntegral x, fromIntegral y) ms') (
@@ -174,8 +178,7 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
                     print "PERDU"
                     return ()
                     else
-                        let etat' = Maybe.fromJust (getEtat newEtat) in
-                            gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat' renderer tmap smap ms' (nb_tours + 1)
+                            gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
                 )
 
 
@@ -229,6 +232,25 @@ loadAssets tileSizeX tileSizeY rdr = do
     (tmap, smap) <- loadAsset "v6" tileSizeX tileSizeY rdr "assets/lemming_fall_r/2.bmp" tmap smap
     (tmap, smap) <- loadAsset "v7" tileSizeX tileSizeY rdr "assets/lemming_fall_r/3.bmp" tmap smap
 
+    (tmap, smap) <- loadAsset "c" tileSizeX tileSizeY rdr "assets/lemming_mine_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c0" tileSizeX tileSizeY rdr "assets/lemming_mine_r/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c1" tileSizeX tileSizeY rdr "assets/lemming_mine_r/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c2" tileSizeX tileSizeY rdr "assets/lemming_mine_r/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c3" tileSizeX tileSizeY rdr "assets/lemming_mine_r/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c4" tileSizeX tileSizeY rdr "assets/lemming_mine_r/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c5" tileSizeX tileSizeY rdr "assets/lemming_mine_r/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c6" tileSizeX tileSizeY rdr "assets/lemming_mine_r/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c7" tileSizeX tileSizeY rdr "assets/lemming_mine_r/7.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "C" tileSizeX tileSizeY rdr "assets/lemming_mine_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C0" tileSizeX tileSizeY rdr "assets/lemming_mine_l/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C1" tileSizeX tileSizeY rdr "assets/lemming_mine_l/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C2" tileSizeX tileSizeY rdr "assets/lemming_mine_l/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C3" tileSizeX tileSizeY rdr "assets/lemming_mine_l/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C4" tileSizeX tileSizeY rdr "assets/lemming_mine_l/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C5" tileSizeX tileSizeY rdr "assets/lemming_mine_l/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C6" tileSizeX tileSizeY rdr "assets/lemming_mine_l/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C7" tileSizeX tileSizeY rdr "assets/lemming_mine_l/7.bmp" tmap smap
 
     (tmap, smap) <- loadAsset ">'" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/0.bmp" tmap smap
     (tmap, smap) <- loadAsset ">'0" tileSizeX tileSizeY rdr "assets/lemming_walk_r_clicked/0.bmp" tmap smap
@@ -269,6 +291,26 @@ loadAssets tileSizeX tileSizeY rdr = do
     (tmap, smap) <- loadAsset "v'5" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/1.bmp" tmap smap
     (tmap, smap) <- loadAsset "v'6" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/2.bmp" tmap smap
     (tmap, smap) <- loadAsset "v'7" tileSizeX tileSizeY rdr "assets/lemming_fall_r_clicked/3.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "c'" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'0" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'1" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'2" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'3" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'4" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'5" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'6" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "c'7" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/7.bmp" tmap smap
+
+    (tmap, smap) <- loadAsset "C'" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'0" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'1" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'2" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'3" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'4" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'5" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'6" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'7" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/7.bmp" tmap smap
 
     (tmap, smap) <- loadAsset "+" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
     loadAsset "+'" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
