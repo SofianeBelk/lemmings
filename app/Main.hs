@@ -89,6 +89,13 @@ perdu e = case e of
                     _ -> False
         _ -> False
 
+abandone :: Either Fin Etat -> Bool
+abandone e = case e of
+        Left f -> case f of
+                    Abandon -> True
+                    _ -> False
+        _ -> False
+
 enCours :: Either Fin Etat -> Bool
 enCours e = case e of
             Left f -> False
@@ -135,7 +142,7 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
     let newEtat = tourEtat nb_tours etat
     let newEtat' = case newEtat of
                     Right e -> Etat.playLemming clickedLem e kbd'
-                    Left err -> etat'
+                    Left err -> Right etat'
     SDL.P (SDL.V2 x y) <- getAbsoluteMouseLocation
     when (M.mousepressed (fromIntegral x, fromIntegral y) ms') (let res = Map.lookup (C (fromIntegral x `div`tileSizeX) ((fromIntegral height - fromIntegral y) `div`tileSizeY)) (casesEnvironnement (enviE etat)) in
                                                                  let clickedLem' = case res of
@@ -151,15 +158,24 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
                                                                                 if perdu newEtat then do
                                                                                     print "PERDU"
                                                                                     return ()
+                                                                                    else if abandone newEtat' then do
+                                                                                        print "Abandon"
+                                                                                        return ()
                                                                                     else
-                                                                                            gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
+                                                                                        case newEtat' of
+                                                                                            Right e -> gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate e renderer tmap smap ms' kbd' (nb_tours + 1)
                                                                 )
     unless (M.mousepressed (fromIntegral x, fromIntegral y) ms') (
         if gagne newEtat || perdu newEtat then (do
             case newEtat of
                 Left e -> print e
             return ()) else
-                    gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
+                        if abandone newEtat' then do
+                                                print "Abandon"
+                                                return ()
+                            else
+                                case newEtat' of
+                                            Right e -> gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate e renderer tmap smap ms' kbd' (nb_tours + 1)
                 )
 
 loadAssets :: Int -> Int -> Renderer -> IO(TextureMap, SpriteMap)

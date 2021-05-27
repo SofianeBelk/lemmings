@@ -20,7 +20,7 @@ data Etat = Etat{
     nbLemmingsSortis :: Int
 }
 
-data Fin = Victoire Int | Defaite
+data Fin = Victoire Int | Defaite | Abandon
 
 hauteurMax :: Int
 hauteurMax = 8          -- Hauteur chute maximale auquelle un Lemming peut survivre
@@ -266,38 +266,39 @@ selectLemming id etat@(Etat envi niv r m s) = case Environnement.trouveIdSeq id 
                             Nothing -> etat
 
 
-playLemming ::  Int -> Etat -> Keyboard -> Etat
+playLemming ::  Int -> Etat -> Keyboard -> Either Fin Etat
 playLemming id etat@(Etat envi niv r v s) kbd =
         let modif
                 | K.keypressed KeycodeC kbd = case trouveIdEnvi id envi of
                         Just (Lem id (Marcheur d c _)) -> case appliqueIdEnv id (const (Lem id (Creuseur d 8 c)))envi of
-                                                         Right e -> Etat e niv r v s
-                                                         Left _ -> etat
-                        _ -> etat
+                                                         Right e -> Right (Etat e niv r v s)
+                                                         Left _ -> Right etat
+                        _ -> Right etat
                 | K.keypressed KeycodeB kbd = case trouveIdEnvi id envi of
                                 Just (Lem id (Marcheur d c _)) -> case appliqueIdEnv id (const (Lem id (Constructeur d 8 c)))envi of
-                                                         Right e -> Etat e niv r v s
-                                                         Left _ -> etat
-                                _ -> etat
+                                                         Right e -> Right (Etat e niv r v s)
+                                                         Left _ -> Right etat
+                                _ -> Right etat
                 | K.keypressed KeycodeX kbd = case trouveIdEnvi id envi of
                                 Just (Lem id (Marcheur d c _)) -> case appliqueIdEnv id (const (Lem id (Exploseur 8 c)))envi of
-                                                         Right e -> Etat e niv r v s
-                                                         Left _ -> etat
-                                _ -> etat
+                                                         Right e -> Right (Etat e niv r v s)
+                                                         Left _ -> Right etat
+                                _ -> Right etat
                 | K.keypressed KeycodeV kbd = case trouveIdEnvi id envi of
                                 Just (Lem id (Marcheur d c _)) -> case appliqueIdEnv id (const (Lem id (Bloqueur d 8 c))) envi of
-                                                         Right e -> Etat e (bloquer c niv) r v s
-                                                         Left _ -> etat
-                                _ -> etat
+                                                         Right e -> Right (Etat e (bloquer c niv) r v s)
+                                                         Left _ -> Right etat
+                                _ -> Right etat
                 | K.keypressed KeycodeN kbd = case trouveIdEnvi id envi of
                                 Just (Lem id (Marcheur d c _)) -> case appliqueIdEnv id (const (Lem id (Boucheur d poseMax c))) envi of
-                                                         Right e -> Etat e niv r v s
-                                                         Left _ -> etat
-                                _ -> etat
+                                                         Right e -> Right (Etat e niv r v s)
+                                                         Left _ -> Right etat
+                                _ -> Right etat
                 | K.keypressed KeycodeW kbd = case trouveIdEnvi id envi of
                                 Just (Lem id (Marcheur d c _)) -> case appliqueIdEnv id (const (Lem id (Demineur d c))) envi of
-                                                         Right e -> Etat e niv r v s
-                                                         Left _ -> etat
-                                _ -> etat
-              | otherwise = etat
-        in modif
+                                                         Right e -> Right (Etat e niv r v s)
+                                                         Left _ -> Right etat
+                                _ -> Right etat
+                | K.keypressed KeycodeEscape kbd = Left Abandon
+                | otherwise = Right etat
+        in  modif
