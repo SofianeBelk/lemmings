@@ -70,7 +70,7 @@ main = do
     let map = casesNiveau niveau
 
     initializeAll
-    window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 500 500}
+    window <- createWindow "Lemmings" $ defaultWindow {windowInitialSize = V2 0 0}
     SDL.setWindowMode window SDL.FullscreenDesktop
 
     V2 xw yw <- get (windowSize window)
@@ -168,7 +168,6 @@ gameLoop dimensions clickedLem tileSizeX tileSizeY frameRate etat renderer tmap 
                                                                                     else
                                                                                             gameLoop dimensions clickedLem' tileSizeX tileSizeY frameRate newEtat' renderer tmap smap ms' kbd' (nb_tours + 1)
                                                                 )
-    -- print (coordEntree (niveauE etat)
     unless (M.mousepressed (fromIntegral x, fromIntegral y) ms') (
         if gagne newEtat then do
             print "GAGNE"
@@ -302,15 +301,22 @@ loadAssets tileSizeX tileSizeY rdr = do
     (tmap, smap) <- loadAsset "c'6" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/6.bmp" tmap smap
     (tmap, smap) <- loadAsset "c'7" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/7.bmp" tmap smap
 
-    (tmap, smap) <- loadAsset "C'" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'0" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/0.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'1" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/1.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'2" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/2.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'3" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/3.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'4" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/4.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'5" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/5.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'6" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/6.bmp" tmap smap
-    (tmap, smap) <- loadAsset "C'7" tileSizeX tileSizeY rdr "assets/lemming_mine_r_clicked/7.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'0" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/0.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'1" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/1.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'2" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/2.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'3" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/3.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'4" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/4.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'5" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/5.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'6" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/6.bmp" tmap smap
+    (tmap, smap) <- loadAsset "C'7" tileSizeX tileSizeY rdr "assets/lemming_mine_l_clicked/7.bmp" tmap smap
 
     (tmap, smap) <- loadAsset "+" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
-    loadAsset "+'" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+0" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+1" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+2" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+3" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+4" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+5" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    (tmap, smap) <- loadAsset "+6" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap
+    loadAsset "+7" tileSizeX tileSizeY rdr "assets/empty.bmp" tmap smap

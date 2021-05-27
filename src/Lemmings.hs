@@ -43,8 +43,7 @@ prop_lemmingInv (Tombeur _ n c _) = prop_coordInv c && n > 0
 -- Instanciation show
 
 instance Show Lemming where 
-    show (Mort _ False) = "+"
-    show (Mort _ True) = "+'"
+    show (Mort _ _) = "+"
 
     show (Marcheur Gauche _ False) = "<"
     show (Marcheur Droite _ False) = ">"
