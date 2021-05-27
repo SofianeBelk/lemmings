@@ -111,6 +111,7 @@ Post-condition des fonctions :
 
 Invariants du type *Environnement* :
 
+* Chaque entité a un identifiant positif et respecte l'invariant de son lemming.
 * Chaque entité présente dans la liste des entités de l'environnement est présente dans au moins une case de l'environnement.
 * Chaque entité présente dans une case de l'environnement est présente dans la liste de entités de l'environnement.
 
@@ -121,6 +122,8 @@ Pré-conditions des fonctions :
 * trouveIdSeq : l'identifiant est positif.
 * trouveIdMap : l'identifiant est positif.
 * appliqueIdSeq : l'identifiant est positif.
+* appliqueIdEnv : l'identifiant est positif.
+* enleveId : l'identifiant est positif.
 
 Post-conditions des fonctions :
 
