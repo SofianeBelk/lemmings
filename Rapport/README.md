@@ -236,42 +236,9 @@ Et pour la version de base on avait 3 types de Lemmings : le Marcheur, le Tombeu
 
 Un des principaux points forts qu'on a trouvé pertinent dans notre projet est la sécurité du code vérifiée grâce aux tests *QuickCheck* expliqué plus haut ainsi que la couverture de toutes les fonctions par des préconditions et des postconditions.
 
-Le second point fort est lors des tour de jeux où on a bien séparé tous les cas de Lemmings possible par leurs *type* ainsi que leurs *direction* si ils ont en une :
-```hs
-tourLemming :: Int -> Lemming -> Etat -> Etat
-tourLemming n (Mort c _) (Etat envi niv r v s) = Etat (enleveEnvi n envi) niv r (v-1) s
+Le second point fort est lors des tour de jeux où on a bien séparé tous les cas de Lemmings possible par leurs *type* ainsi que leurs *direction* si ils ont en une (accessible [ici](https://gitlab.com/SofianeBelkhir/lemmings/-/blob/1eefc6ddfd809b6d3ca5f8fbd4abda11bf0de95b/src/Etat.hs#L48).)
 
-tourLemming n (Marcheur Gauche c se) (Etat envi niv r m s)  = case coordSortie niv of
-                                                                Nothing -> suite
-                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (m-1) (s+1) else suite
-                                                                where suite = case (passable (gauche c) niv, dure (bas c) niv) of
-                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (gauche c) envi) niv r m s
-                                                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Tombeur Gauche hauteurMax c se))) envi of
-                                                                                        Right e -> Etat e niv r m s
-                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c se)))envi of
-                                                                                        Right e -> Etat e niv r m s
-
-tourLemming n (Marcheur Droite c se) (Etat envi niv r m s)  = case coordSortie niv of
-                                                                Nothing -> suite
-                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (m-1) (s+1) else suite
-                                                                where suite = case (passable (droite c) niv && passable (haut (droite c)) niv , dure(bas c) niv) of
-                                                                                    (True, True) -> Etat (deplaceDansEnvironnement n (droite c) envi) niv r m s
-                                                                                    (_,False) -> case appliqueIdEnv n (const (Lem n (Tombeur Droite hauteurMax c se)))envi of
-                                                                                            Right e-> Etat e niv r m s
-                                                                                    (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c se))) envi of
-                                                                                            Right e -> Etat e niv r m s
-
-tourLemming n (Tombeur di k c se) (Etat envi niv r v s) = case (dure (bas c) niv, n <= 0) of
-                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Mort c se))) envi of
-                                                                Right e -> Etat e niv r (v-1) s
-                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur di c se))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Tombeur di (n-1) (bas c) se))) (deplaceDansEnvironnement n (bas c) envi) of
-                                                                Right e -> Etat e niv r v s
-                                                                
-```
-
-ce qui nous a permis de déboguer assez rapidement le code lorsqu'on voyait un comportement anormal d'un lemmings sur l'interface graphique parce que là, on avait qu'à suivre ses traces d'appels en partant de la fonction `tourLemmings`qui lui est associée.
+ce qui nous a permis de déboguer assez rapidement le code lorsqu'on voyait un comportement anormal d'un lemmings su l'interface graphique, parce que là, on avait qu'à suivre ses traces d'appels en partant de la fonction `tourLemmings`qui lui est associée.
 
 
 ### Extensions 
@@ -298,189 +265,17 @@ Comme on a aussi ajouté au Niveau deux nouveaux types de case :
 
 #### Points forts
 
-L'ajout des nouvelles extensions s'inspire fortement de celles d'avant où il suffisait de modifier juste le comportement des lemmings, même si celà à ajouter beaucoup de cas au `tourLemming` et nous a obligé à modifier le comportement de ceux d'avant pour les adapter aux nouvelles extensions :
+L'ajout des nouvelles extensions s'inspire fortement de celles d'avant où il suffisait de modifier juste le comportement des lemmings, même si celà à ajouter beaucoup de cas au `tourLemming` et nous a obligé à modifier le comportement de ceux d'avant pour les adapter aux nouvelles extensions (le code est accessible [ici](https://gitlab.com/SofianeBelkhir/lemmings/-/blob/master/src/Etat.hs#L63).)
+### Difficultés
 
-```hs
-tourLemming :: Int -> Lemming -> Etat -> Etat
+On a rencontré deux difficultés importantes lors du développement de notre projet :
 
-tourLemming n (Mort c) (Etat envi niv r v s) = Etat (enleveEnvi n envi) niv r v s
-tourLemming n (Marcheur Gauche c _) etat@(Etat envi niv r v s)  = case coordSortie niv of
-                                                                Nothing -> suite
-                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
-                                                                where suite = case Map.lookup (bas c) (casesNiveau niv) of
-                                                                                        Just Mine -> case appliqueIdEnv n (const (Lem n (Brule 8 c)))envi of
-                                                                                                        Right e -> Etat e (activerMine (bas c) niv) r v s
-                                                                                                        Left _ -> etat
-                                                                                        Nothing -> etat
-                                                                                        _ -> case (passable (gauche c) niv && passable (haut (gauche c)) niv, dure (bas c) niv) of
-                                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (gauche c) envi) niv r v s
-                                                                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Tombeur Gauche hauteurMax c))) envi of
-                                                                                                                Right e -> Etat e niv r v s
-                                                                                                                Left _ -> etat
-                                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False)))envi of
-                                                                                                        Right e -> Etat e niv r v s
-                                                                                                        Left _ -> etat
+Lors de l'explosion d'un lemming *Exploseur*, on doit [tuer tout les lemmings qu'il y a sur les 9 cases](https://gitlab.com/SofianeBelkhir/lemmings/-/blob/master/src/Etat.hs#L63) dont [la précondition](https://gitlab.com/SofianeBelkhir/lemmings/-/blob/master/src/Environnement.hs#L215) est assez longue et en même temps [vider ces cases du niveau](tuer tout les lemmings qu'il y a sur les 9 cases).
 
-tourLemming n (Marcheur Droite c _) etat@(Etat envi niv r v s)  = case coordSortie niv of
-                                                                Nothing -> suite
-                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
-                                                                where suite = case Map.lookup (bas c) (casesNiveau niv) of
-                                                                                        Just Mine -> case appliqueIdEnv n (const (Lem n (Brule 8 c)))envi of
-                                                                                                        Right e -> Etat e (activerMine (bas c) niv) r v s
-                                                                                                        Left _ -> etat
-                                                                                        Nothing -> etat
-                                                                                        _ -> case (passable (droite c) niv && passable (haut (droite c)) niv , dure(bas c) niv) of
-                                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (droite c) envi) niv r v s
-                                                                                                (_,False) -> case appliqueIdEnv n (const (Lem n (Tombeur Droite hauteurMax c)))envi of
-                                                                                                                Right e-> Etat e niv r v s
-                                                                                                                Left _ -> etat
-                                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
-                                                                                                                Right e -> Etat e niv r v s
-                                                                                                                Left _ -> etat
+La deuxième difficulté a été de trouver des asserts intéressants pour l'interface graphique, et après quelques heures de recherche, on a réussi à trouver une base d'assets en *gif* accssible [ici](https://github.com/radare/fxos-app-lemmings.git) où on s'est servi et on a dû convertir image par image en *bmp*.
 
-tourLemming n (Tombeur di k c) etat@(Etat envi niv r v s) = case (dure (bas c) niv, k <= 0) of
-                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Mort c))) envi of
-                                                                Right e -> Etat e niv r (v-1) s
-                                                                Left _ -> etat
-                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur di c False))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Tombeur di (k-1) (bas c)))) (deplaceDansEnvironnement n (bas c) envi) of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
+La deuxième difficulté concernant l'interface graphique et la dernière du projet a été la gestion de l'interface pour essayer de donner l'impression au joueur que le lemmings bouge à chaque tour de boucle au lieu de juste mettre un lemming statique qui glisse, donc pour le faire on a dû charger 8 images pour chaque type de lemmings (type + direction) ainsi que des assets pour mettre en avant le marcheur qui est selectionné (en l'encadrant en rouge pour qu'il soit bien visible). 
 
-tourLemming n (Creuseur Gauche i c) etat@(Etat envi niv r v s) = case (terre (gauche (bas c)) niv, i > 0) of
-                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Creuseur Gauche (i-1) c ))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False))) envi of
-                                                                Right e -> Etat e (supprimerCase (gauche (bas c)) niv) r v s
-                                                                Left _ -> etat
-                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
+Et même si l'interface est assez basique, mais on est assez fiers du résultat final.
 
-tourLemming n (Creuseur Droite i c) etat@(Etat envi niv r v s) = case (terre (droite (bas c)) niv, i > 0) of
-                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Creuseur Droite (i-1) c ))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
-                                                                Right e -> Etat e (supprimerCase (droite (bas c)) niv) r v s
-                                                                Left _ -> etat
-                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-
-tourLemming n (Constructeur Gauche i c) etat@(Etat envi niv r v s) = case (vide (gauche c) niv, i > 0) of
-                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Constructeur Gauche (i-1) c))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
-                                                                Right e -> Etat e (poserCase (gauche c) niv) r v s
-                                                                Left _ -> etat
-                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-
-tourLemming n (Constructeur Droite i c) etat@(Etat envi niv r v s) = case (vide (droite c) niv, i > 0) of
-                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Constructeur Droite (i-1) c))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False))) envi of
-                                                                Right e -> Etat e (poserCase (droite c) niv) r v s
-                                                                Left _ -> etat
-                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-
-tourLemming n (Boucheur Gauche i c) etat@(Etat envi niv r v s)
-                | i <= 0 = case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                | otherwise = case coordSortie niv of
-                                Nothing -> suite
-                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
-                            where suite = case (passable (gauche c) niv, dure (bas c) niv) of
-                                                (True, True) -> Etat (deplaceDansEnvironnement n (gauche c) envi) niv r v s
-                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Boucheur Gauche (i-1) c))) envi of
-                                                                Right e -> Etat e (poserCase (bas c) niv) r v s
-                                                                Left _ -> etat
-                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Boucheur Droite i c)))envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-
-tourLemming n (Boucheur Droite i c) etat@(Etat envi niv r v s)
-                | i <= 0 = case appliqueIdEnv n (const (Lem n (Marcheur Droite c False))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                | otherwise = case coordSortie niv of
-                                Nothing -> suite
-                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
-                            where suite = case (passable (droite c) niv, dure (bas c) niv) of
-                                                (True, True) -> Etat (deplaceDansEnvironnement n (droite c) envi) niv r v s
-                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Boucheur Droite (i-1) c))) envi of
-                                                                Right e -> Etat e (poserCase (bas c) niv) r v s
-                                                                Left _ -> etat
-                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Boucheur Gauche i c)))envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-
-tourLemming n (Exploseur i c) etat@(Etat envi niv r v s)
-                | i > 0 = case appliqueIdEnv n (const (Lem n (Exploseur (i-1) c))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                |otherwise = case appliqueIdEnv n (const (Lem n (Mort c))) envi of
-                                                                Right e -> let (etat', morts) = explosion c e in Etat etat' (exploserCase c niv) r (v-morts) s
-                                                                Left _ -> etat
-
-tourLemming n (Bloqueur d i c) etat@(Etat envi niv r v s)
-                | i > 0 = case appliqueIdEnv n (const (Lem n (Bloqueur d (i-1) c))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                | otherwise = case appliqueIdEnv n (const (Lem n (Marcheur d c False))) envi of
-                                                                Right e -> Etat e (debloquer c niv) r v s
-                                                                Left _ -> etat
-
-tourLemming n (Brule i c) etat@(Etat envi niv r v s)
-                | i > 0 = case appliqueIdEnv n (const (Lem n (Brule (i-1) c))) envi of
-                                                                Right e -> Etat e niv r v s
-                                                                Left _ -> etat
-                |otherwise = case appliqueIdEnv n (const (Lem n (Mort c))) envi of
-                                                                Right e ->  Etat e (supprimerCase (bas c) niv) r (v-1) s
-                                                                Left _ -> etat
-
-tourLemming n (Demineur Gauche c) etat@(Etat envi niv r v s)  = case coordSortie niv of
-                                                                Nothing -> suite
-                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
-                                                                where suite = case Map.lookup (bas c) (casesNiveau niv) of
-                                                                                        Just Mine -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False)))envi of
-                                                                                                        Right e -> Etat e (desactiverMine (bas c) niv) r v s
-                                                                                                        Left _ -> etat
-                                                                                        Nothing -> etat
-                                                                                        _ -> case (passable (gauche c) niv && passable (haut (gauche c)) niv, dure (bas c) niv) of
-                                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (gauche c) envi) niv r v s
-                                                                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Tombeur Gauche hauteurMax c))) envi of
-                                                                                                                Right e -> Etat e niv r v s
-                                                                                                                Left _ -> etat
-                                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Demineur Droite c)))envi of
-                                                                                                        Right e -> Etat e niv r v s
-                                                                                                        Left _ -> etat
-
-tourLemming n (Demineur Droite c) etat@(Etat envi niv r v s)  = case coordSortie niv of
-                                                                Nothing -> suite
-                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
-                                                                where suite = case Map.lookup (bas c) (casesNiveau niv) of
-                                                                                        Just Mine -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False)))envi of
-                                                                                                        Right e -> Etat e (desactiverMine (bas c) niv) r v s
-                                                                                                        Left _ -> etat
-                                                                                        Nothing -> etat
-                                                                                        _ -> case (passable (droite c) niv && passable (haut (droite c)) niv, dure (bas c) niv) of
-                                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (droite c) envi) niv r v s
-                                                                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Tombeur Droite hauteurMax c))) envi of
-                                                                                                                Right e -> Etat e niv r v s
-                                                                                                                Left _ -> etat
-                                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Demineur Gauche c)))envi of
-                                                                                                        Right e -> Etat e niv r v s
-                                                                                                        Left _ -> etat
-```
 
