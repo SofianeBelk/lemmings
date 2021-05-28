@@ -46,3 +46,7 @@ Pour modifier le comportement d'un *lemming*, faites un click de souris dessus e
 * **b** : le lemming devient un *Constructeur*, si la case à côté de lui est vide, il pose un bloque en *terre*.
 * **n** : le lemming devient un *Boucheur*, il bouche tout les vides sur lesquels il passe jusqu'à vider son inventaire (pour changer la taille de son inventaire, changer la valeur de retour de `poseMax`).
 * **Esc** : pour quitter le jeu.
+
+## Compte rendu du projet
+
+Vous trouverez le rapport du projet dans le dossier `./Rapport` accessible [ici] (./Rapport)
