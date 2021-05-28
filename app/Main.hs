@@ -30,7 +30,7 @@ import SpriteMap
 import qualified SpriteMap as SM
 
 niv :: Niveau
-niv = exempleNiveau
+niv = read exempleNiveau
 
 env :: Environnement
 env = makeEnvironnement (hNiveau niv) (lNiveau niv)

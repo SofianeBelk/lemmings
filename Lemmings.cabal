@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5089ed422f5a54dbf7098fccea14e98b539f01cca44a632ac025dfe7173fc6de
+-- hash: 7eae0fc03ce99bb8f8c0befa36494325858619cdd41d3c03aa6b0acfd033dae2
 
 name:           Lemmings
 version:        0.1.0.0
@@ -83,6 +83,9 @@ test-suite Lemmings-test
   main-is: Spec.hs
   other-modules:
       CoordSpec
+      EtatSpec
+      LemmingsSpec
+      NiveauSpec
       Paths_Lemmings
   hs-source-dirs:
       test

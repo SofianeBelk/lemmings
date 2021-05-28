@@ -20,32 +20,62 @@ data Lemming =  Mort Coord
               deriving Eq
 
 -- constructeurs des Lemmings
+prop_pre_makeMort :: Coord -> Bool
+prop_pre_makeMort = prop_coord_inv
+
 makeMort :: Coord -> Lemming
 makeMort = Mort
+
+prop_pre_makeMarcheur :: Direction -> Coord -> Bool
+prop_pre_makeMarcheur _ = prop_coord_inv
 
 makeMarcheur :: Direction -> Coord -> Lemming
 makeMarcheur d c = Marcheur d c False
 
+prop_pre_makeCreuseur :: Direction -> Int -> Coord -> Bool
+prop_pre_makeCreuseur _  i c =  i >= 0 && prop_coord_inv c
+
 makeCreuseur :: Direction -> Int -> Coord -> Lemming
 makeCreuseur = Creuseur
+
+prop_pre_makeConstructeur :: Direction -> Int -> Coord -> Bool
+prop_pre_makeConstructeur _  i c =  i >= 0 && prop_coord_inv c
 
 makeConstructeur :: Direction -> Int -> Coord -> Lemming
 makeConstructeur = Creuseur
 
+prop_pre_makeExploseur ::  Int -> Coord -> Bool
+prop_pre_makeExploseur i c =  i >= 0 && prop_coord_inv c
+
 makeExploseur ::  Int -> Coord -> Lemming
 makeExploseur = Exploseur
+
+prop_pre_makeBloqueur :: Direction -> Int -> Coord -> Bool
+prop_pre_makeBloqueur _ i c =  i >= 0 && prop_coord_inv c
 
 makeBloqueur ::  Direction -> Int -> Coord -> Lemming
 makeBloqueur = Bloqueur
 
+prop_pre_makeBoucheur :: Direction -> Int -> Coord -> Bool
+prop_pre_makeBoucheur _ i c =  i >= 0 && prop_coord_inv c
+
 makeBoucheur ::  Direction -> Int -> Coord -> Lemming
 makeBoucheur = Bloqueur
+
+prop_pre_makeTombeur :: Direction -> Int -> Coord -> Bool
+prop_pre_makeTombeur _ i c =  i >= 0 && prop_coord_inv c
 
 makeTombeur :: Direction -> Int -> Coord -> Lemming
 makeTombeur = Tombeur
 
+prop_pre_makeBrule ::  Int -> Coord -> Bool
+prop_pre_makeBrule i c =  i >= 0 && prop_coord_inv c
+
 makeBrule :: Int -> Coord -> Lemming
 makeBrule = Brule
+
+prop_pre_makeDemineur :: Direction -> Coord -> Bool
+prop_pre_makeDemineur _ = prop_coord_inv
 
 makeDemineur :: Direction -> Coord -> Lemming
 makeDemineur = Demineur
@@ -54,17 +84,17 @@ makeDemineur = Demineur
 prop_lemming_inv :: Lemming -> Bool
 prop_lemming_inv (Mort c) = prop_coord_inv c
 prop_lemming_inv (Marcheur _ c _) = prop_coord_inv c
-prop_lemming_inv (Creuseur _ _ c) = prop_coord_inv c
-prop_lemming_inv (Constructeur _ _ c) = prop_coord_inv c
-prop_lemming_inv (Exploseur _ c) = prop_coord_inv c
-prop_lemming_inv (Bloqueur _ _ c) = prop_coord_inv c
-prop_lemming_inv (Boucheur _ _ c) = prop_coord_inv c
-prop_lemming_inv (Tombeur _ n c) = prop_coord_inv c && n > 0
-prop_lemming_inv (Brule _ c) = prop_coord_inv c
+prop_lemming_inv (Creuseur _ i c) = prop_coord_inv c && i >= 0
+prop_lemming_inv (Constructeur _ i c) = prop_coord_inv c && i >= 0
+prop_lemming_inv (Exploseur i c) = prop_coord_inv c && i >= 0
+prop_lemming_inv (Bloqueur _ i c) = prop_coord_inv c && i >= 0
+prop_lemming_inv (Boucheur _ i c) = prop_coord_inv c && i >= 0
+prop_lemming_inv (Tombeur _ i c) = prop_coord_inv c && i >= 0
+prop_lemming_inv (Brule i c) = prop_coord_inv c && i >= 0
 prop_lemming_inv (Demineur _ c ) = prop_coord_inv c
 
 -- Instanciation show
-instance Show Lemming where 
+instance Show Lemming where
     show (Mort _) = "+"
 
     show (Marcheur Gauche _ False) = "<"
@@ -111,19 +141,19 @@ bougeLemming :: Deplacement -> Lemming -> Lemming
 bougeLemming _ (Mort c) = Mort c
 bougeLemming d (Marcheur di c s)
     |d == G || d == GH = Marcheur Gauche (bougeCoord d c) s
-    |d == D || d == DH = Marcheur Droite (bougeCoord d c) s
+    |d == D || d == DH = Marcheur Droite (bougeCoord d c) s
 bougeLemming _ c@Creuseur {} = c
 bougeLemming _ c@Constructeur {} = c
 bougeLemming _ b@Bloqueur {} = b
-bougeLemming d b@(Boucheur di i c) 
+bougeLemming d b@(Boucheur di i c)
     |d == G || d == GH = Boucheur Gauche i (bougeCoord d c)
-    |d == D || d == DH = Boucheur Droite i (bougeCoord d c)
+    |d == D || d == DH = Boucheur Droite i (bougeCoord d c)
 bougeLemming _ e@(Exploseur _ _) = e
 bougeLemming _ (Tombeur di n c) = Tombeur di (n-1) (bougeCoord B c)
 bougeLemming _ (Brule n c) = Brule n c
-bougeLemming d b@(Demineur di c) 
+bougeLemming d b@(Demineur di c)
     |d == G || d == GH = Demineur Gauche (bougeCoord d c)
-    |d == D || d == DH = Demineur Droite (bougeCoord d c)
+    |d == D || d == DH = Demineur Droite (bougeCoord d c)
 
 deplaceLemming :: Coord -> Lemming -> Lemming
 deplaceLemming _ (Mort c) = Mort c
@@ -137,7 +167,7 @@ deplaceLemming co (Tombeur d n _) = Tombeur d n co
 deplaceLemming co (Brule n _) = Brule n co
 deplaceLemming co (Demineur d _) = Demineur d co
 
-instance Placable Lemming where 
+instance Placable Lemming where
     coordP = coordLemming
     bougeP = bougeLemming
     deplaceP = deplaceLemming

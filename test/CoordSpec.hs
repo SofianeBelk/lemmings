@@ -4,6 +4,11 @@ import Test.Hspec
 import Test.QuickCheck
 
 import Coord
+    ( Deplacement(..),
+      Coord(..),
+      initCoord,
+      prop_coord_inv,
+      bougeCoord )
 
 
 genCoordOk :: Gen Coord
@@ -73,7 +78,7 @@ prop_deplacementBougeCoord_inv c@(C x y) d  =
 
 deplacementBougeCoordSpec = do 
     describe "BougeCoord" $ do 
-        it "Préserver l'invariant" $
+        it "Préserver l'invariant Coord" $
             property $  prop_deplacementBougeCoord_inv 
 
 
