@@ -62,7 +62,7 @@ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 Pour lancer le jeu, il suffit de lancer la commande `stack run lib/XXXX.txt` (remplacer `XXXX.txt` par un nom de fichier valide).
 
-### Comment jouer 
+### Comment jouer 
 
 Pour modifier le comportement d'un *lemming*, il suffit de faire un click de souris dessus et appuyez sur une des touches :
 
@@ -107,7 +107,7 @@ Post-condition des fonctions :
 
 * initCoord : la coordonnée instanciée respecte l'invariant.
 
-### Environnement
+### Environnement
 
 Invariants du type *Environnement* :
 
@@ -167,14 +167,14 @@ Post-conditions des fonctions :
 * tourEtat : l'état vérifie ses invariants.
 * selectLemming : l'état vérifie ses invariants et le lemmings associé à l'identifiant est selectionné.
 
-### Lemmings
+### Lemmings
 
 Invariant du type *Lemmings* :
 
 * l'invariant de ses coordonnées est vérifié.
 
 
-### Niveau
+### Niveau
 
 Invariants du type *Niveau* :
 
@@ -206,6 +206,88 @@ Post-conditions des fonctions :
 * debloquer : la case debloquée
 
 
+## Tests
+
+......
+
+
+## Implementations
+
+### Base
+
+Pour l’implémentation du jeu de base on s'est basés sur le sujet du partiel, la solution proposée pendant le *TD 6* ainsi que le *TME 6* et qui nous a donné la structure suivante :
+
+* un module **Coord** qui contient le type *Coord* qui représente une coordonnée dans le niveau et le type *Deplacement* qui représente les différents déplacements possibles ainsi que la classe **Placable**.
+* un module **Environnement** qui contient les types et fonctions implémentants l'environnement du jeu c'est à dire les entités et ces mêmes entités dans un niveau donnée à un instant donnée.
+* un module **Etat** qui contient les types et fonctions implémentants le moteur du jeu : un environnement, un niveau, le nombre de lemmings à générer, le nombre de lemmings vivants et le nombre de lemmings sauvés.
+* le module **Keyboard** du *TME 6*.
+* un module **Lemmings** qui gère les lemmings.
+* un module **Moteur** qui fait *tourner* le jeu.
+* un module **Mouse** qui gère les évenements liés à la souris.
+* un module **Niveau** qui implémente les types et les fonctions de la carte du jeu.
+* le module **Sprite** du *TME 6*.
+* le module **SpriteMap** du *TME 6*.
+* le module **TextureMap** du *TME 6*.
+* un module *Main* qui contient toute la partie effet de bord du projet, on charge les assets, on initialise la carte, l'environnement, l'etat... etc et on lance la boucle du jeu.
+
+#### Points forts
+
+Un des principaux points forts qu'on a trouvé pertinent dans notre projet est la sécurité du code vérifiée grâce aux tests *QuickCheck* expliqué plus haut ainsi que la couverture de toutes les fonctions par des préconditions et des postconditions.
+
+Le second point fort est lors des tour de jeux où on a bien séparé tous les cas de Lemmings possible par leurs *type* ainsi que leurs *direction* si ils ont en une :
+```hs
+tourLemming :: Int -> Lemming -> Etat -> Etat
+
+tourLemming n (Mort c) (Etat envi niv r v s) = Etat (enleveEnvi n envi) niv r v s
+tourLemming n (Marcheur Gauche c _) etat@(Etat envi niv r v s)  = case coordSortie niv of
+                                                                Nothing -> suite
+                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
+                                                                where suite = case Map.lookup (bas c) (casesNiveau niv) of
+                                                                                        Just Mine -> case appliqueIdEnv n (const (Lem n (Brule 8 c)))envi of
+                                                                                                        Right e -> Etat e (activerMine (bas c) niv) r v s
+                                                                                                        Left _ -> etat
+                                                                                        Nothing -> etat
+                                                                                        _ -> case (passable (gauche c) niv && passable (haut (gauche c)) niv, dure (bas c) niv) of
+                                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (gauche c) envi) niv r v s
+                                                                                                (_, False) -> case appliqueIdEnv n (const (Lem n (Tombeur Gauche hauteurMax c))) envi of
+                                                                                                                Right e -> Etat e niv r v s
+                                                                                                                Left _ -> etat
+                                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Droite c False)))envi of
+                                                                                                        Right e -> Etat e niv r v s
+                                                                                                        Left _ -> etat
+
+tourLemming n (Marcheur Droite c _) etat@(Etat envi niv r v s)  = case coordSortie niv of
+                                                                Nothing -> suite
+                                                                Just cs -> if cs == c then Etat (enleveEnvi n envi) niv r (v-1) (s+1) else suite
+                                                                where suite = case Map.lookup (bas c) (casesNiveau niv) of
+                                                                                        Just Mine -> case appliqueIdEnv n (const (Lem n (Brule 8 c)))envi of
+                                                                                                        Right e -> Etat e (activerMine (bas c) niv) r v s
+                                                                                                        Left _ -> etat
+                                                                                        Nothing -> etat
+                                                                                        _ -> case (passable (droite c) niv && passable (haut (droite c)) niv , dure(bas c) niv) of
+                                                                                                (True, True) -> Etat (deplaceDansEnvironnement n (droite c) envi) niv r v s
+                                                                                                (_,False) -> case appliqueIdEnv n (const (Lem n (Tombeur Droite hauteurMax c)))envi of
+                                                                                                                Right e-> Etat e niv r v s
+                                                                                                                Left _ -> etat
+                                                                                                (_,_) -> case appliqueIdEnv n (const (Lem n (Marcheur Gauche c False))) envi of
+                                                                                                                Right e -> Etat e niv r v s
+                                                                                                                Left _ -> etat
+
+tourLemming n (Tombeur di k c) etat@(Etat envi niv r v s) = case (dure (bas c) niv, k <= 0) of
+                                                        (True, True) -> case appliqueIdEnv n (const (Lem n (Mort c))) envi of
+                                                                Right e -> Etat e niv r (v-1) s
+                                                                Left _ -> etat
+                                                        (True, _) -> case appliqueIdEnv n (const (Lem n (Marcheur di c False))) envi of
+                                                                Right e -> Etat e niv r v s
+                                                                Left _ -> etat
+                                                        (_, _) -> case appliqueIdEnv n (const (Lem n (Tombeur di (k-1) (bas c)))) (deplaceDansEnvironnement n (bas c) envi) of
+                                                                Right e -> Etat e niv r v s
+                                                                Left _ -> etat
+                                                                
+
+```
+
+### Extensions 
 
 
 
