@@ -208,7 +208,11 @@ Post-conditions des fonctions :
 
 ## Tests
 
-......
+Pour les tests, on a fait des tests *QuickCheck* des modules *Coord*, *Etat*, *Lemmings* et *Niveau* dans le répertoire `test` dans des modules séparés et lancés par `Spec.hs`
+
+Pour les exécuter il suffit de lancer la commande `stack test`.
+
+Par manque de temps, on n'a pas pu écrire des tests qui couvrent toutes les fonctions du code, pour celà on s'est principalement basé sur des tests *QuickCheck* qu'on jugeait plus dûr que les *Hspec* qu'on a eu la chance d'implémenter durant le *TME 3*.
 
 
 ## Implementations
