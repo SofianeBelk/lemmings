@@ -6,7 +6,6 @@ import Test.QuickCheck
 import Niveau 
 import Coord
 
-
 prop_supprimerCase_inv :: Coord -> Niveau -> Property
 prop_supprimerCase_inv c n =
     prop_coord_inv c && prop_niveau_inv n && prop_pre_supprimerCase c n
@@ -20,8 +19,9 @@ prop_poserCase_inv c n =
 
 prop_activerMine_inv :: Coord -> Niveau -> Property
 prop_activerMine_inv c n =
-    prop_coord_inv c && prop_niveau_inv n && prop_pre_activerMine c n
-    ==> property $ prop_post_activerMine c n
+   prop_pre_activerMine c n
+    ==>  
+    property $ prop_post_activerMine c n
 
 prop_desactiverMine_inv ::Coord -> Niveau -> Property
 prop_desactiverMine_inv c n =
@@ -44,8 +44,7 @@ prop_debloquer_inv c n =
     prop_coord_inv c && prop_niveau_inv n && prop_pre_debloquer c n
     ==> property $ prop_post_debloquer c n
 
-
-genCoordOk :: Gen Coord
+{- genCoordOk :: Gen Coord
 genCoordOk = do
         x <- choose((0,5) :: (Int, Int))
         y <- choose((0,6) :: (Int,Int))
@@ -68,11 +67,18 @@ genCoordUltra :: Gen Coord
 genCoordUltra = do
         x <- choose(6,9)
         y <- choose(0,6)
+        return $ initCoord x y -}
+
+genCoordOk :: Gen Coord
+genCoordOk = do
+        x <- choose((0,9) :: (Int, Int))
+        y <- choose((0,11) :: (Int,Int))
         return $ initCoord x y 
+
 instance Arbitrary Coord where
     arbitrary =
-        frequency [(0, genCoordFree) -- 20% de génération libre
-              , (2, genCoordOk), (3,genCoordRandom), (0,genCoordUltra)]     -- 80% de génération sûre
+        frequency [(10, genCoordOk) -- 20% de génération libre
+              ] 
 
 
 genNiveau:: Gen Niveau 
@@ -88,12 +94,10 @@ supprimerCaseSpec = do
     it "preserves the invariant supprimer case" $
       property prop_supprimerCase_inv
 
-
 poserCaseSpec = do
   describe "poserCase" $ do
     it "preserves the invariant poser case" $
       property prop_poserCase_inv
-
 
 activerMineSpec = do
   describe "activerMine" $ do
@@ -108,13 +112,12 @@ desactiverMineSpec = do
 exploserCaseSpec = do
   describe "exploserCase" $ do
     it "preserves the invariant exploser case" $
-      property prop_exploserCase_inv
+      property prop_post_exploserCase
 
 bloquerSpec = do
   describe "bloquer" $ do
     it "preserves the invariant bloquer " $
       property prop_bloquer_inv
-
 
 debloquerSpec = do
   describe "supprimerCase" $ do

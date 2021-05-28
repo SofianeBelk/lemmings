@@ -1,0 +1,26 @@
+XXXXXXXXXXXXXXXXXXXXXXXXXX
+XE                       X
+X     X                  X
+X000000                  X
+X                        X
+X           X            X
+XM00000000000            X
+X                        X
+X                X       X
+XM0000000000000000       X
+X                        X
+X                        X
+XM0000000000000000000000MX
+X                        X
+X      X                 X
+X      00000000000000000MX
+X                        X
+X           X            X
+X           000000000000MX
+X                        X
+X                  X     X
+X                  000000X
+X                        X
+X                        X
+X                       SX
+XXXXXXXXXXXXXXXXXXXXXXXXXX

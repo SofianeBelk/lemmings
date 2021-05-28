@@ -10,7 +10,6 @@ import Coord
       prop_coord_inv,
       bougeCoord )
 
-
 genCoordOk :: Gen Coord
 genCoordOk = do
         x <- choose((0,100) :: (Int, Int))
@@ -24,7 +23,7 @@ genCoordFree = do
         return $ initCoord x y 
 
 prop_genCoordOk_inv :: Property
-prop_genCoordOk_inv = forAll genCoordOk $ prop_coord_inv
+prop_genCoordOk_inv = forAll genCoordOk prop_coord_inv
 
 instance Arbitrary Coord where
     arbitrary =
@@ -64,22 +63,18 @@ instance Arbitrary Deplacement where
 
 coordSpecGenOK = do
     describe "Génération des coord" $ do
-        it "Génération des coordonnées qui satisfait l'invariant" $
+        it "Génération des coordonnées qui satisfont l'invariant" $
             property prop_genCoordOk_inv
 
 prop_deplacementBougeCoord_inv :: Coord -> Deplacement ->Property
 prop_deplacementBougeCoord_inv c@(C x y) d  =
     prop_coord_inv c
     ==> classify ((x < 10) && (y < 10) && (x>0) && (y>0)) "small coord" $
-        classify ((x < 50) && (y < 50) && (x>0) && (y>0)) "meduim coord" $
+        classify ((x < 50) && (y < 50) && (x>0) && (y>0)) "medium coord" $
         classify ((x <= 100) && (y <= 100) && (x>0) && (y>0)) "large coord" $
         property $ prop_coord_inv (bougeCoord d c)
-
 
 deplacementBougeCoordSpec = do 
     describe "BougeCoord" $ do 
         it "Préserver l'invariant Coord" $
-            property $  prop_deplacementBougeCoord_inv 
-
-
-
+            property prop_deplacementBougeCoord_inv 

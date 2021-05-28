@@ -106,7 +106,7 @@ instance Read Niveau where
 
 -- Exemple d'un niveau 
 exempleNiveau :: String
-exempleNiveau = "XXXXXXXXXX\nX E      X\nX      MMX\nX0M00    X\nX     MM X\nX        X\nX   M0000X\nX        X\nX 0000000X\nX     MMMX\nX       SX\nXXXXXXXXXX"
+exempleNiveau = "XXXXXXXXXX\nX E      X\nX      MMX\nX0M00    X\nX     WW X\nX        X\nX   M0000X\nX        X\nX 0000000X\nX     MMMX\nX       SX\nXXXXXXXXXX"
 
 
 -- pas de Précondition ni de Post-condition "ce sont juste des getteur"
@@ -162,33 +162,26 @@ prop_post_poserCase c niv@(Niveau _ _ cns) = let (Niveau _ _ cns') = poserCase c
                                                         Just Terre -> True 
                                                         _ -> False
 prop_pre_activerMine :: Coord -> Niveau -> Bool 
-prop_pre_activerMine co (Niveau h l casesNiveau) = case Map.lookup co casesNiveau of 
-                                                        Just Mine -> True 
-                                                        _ -> False
+prop_pre_activerMine co (Niveau _ _ casesNiveau) = Map.lookup co casesNiveau == Just Mine
 
 activerMine :: Coord -> Niveau -> Niveau
 activerMine co niv@(Niveau h l casesNiveau) = case Map.lookup co casesNiveau of
                                             Just Mine -> Niveau h l (Map.insert co MineActive casesNiveau)
+                                            _ -> niv
 
 prop_post_activerMine :: Coord -> Niveau -> Bool 
-prop_post_activerMine co niv = case Map.lookup co (casesNiveau (activerMine co niv)) of 
-                                                            Just MineActive ->  True 
-                                                            _ -> False
+prop_post_activerMine co niv = Map.lookup co (casesNiveau (activerMine co niv)) == Just MineActive
 
 prop_pre_desactiverMine :: Coord -> Niveau -> Bool 
-prop_pre_desactiverMine co (Niveau h l casesNiveau) = case Map.lookup co casesNiveau of 
-                                                Just MineActive ->  True 
-                                                _ -> False
+prop_pre_desactiverMine co (Niveau h l casesNiveau) = Map.lookup co casesNiveau == Just MineActive
 
 desactiverMine :: Coord -> Niveau -> Niveau
 desactiverMine co niv@(Niveau h l casesNiveau) = case Map.lookup co casesNiveau of
-                                            Just Mine -> Niveau h l (Map.insert co Terre casesNiveau)
+                                            Just MineActive -> Niveau h l (Map.insert co Terre casesNiveau)
                                             _ -> niv
 
 prop_post_desactiverMine :: Coord -> Niveau -> Bool 
-prop_post_desactiverMine co niv = case Map.lookup co (casesNiveau (desactiverMine co niv)) of 
-                                                Just Terre ->  True 
-                                                _ -> False
+prop_post_desactiverMine co niv = Map.lookup  co (casesNiveau (desactiverMine co niv)) == Just Terre
 
 exploserCase :: Coord -> Niveau -> Niveau
 exploserCase c (Niveau h l casesNiveau) = let m = (case Map.lookup (haut c) casesNiveau of

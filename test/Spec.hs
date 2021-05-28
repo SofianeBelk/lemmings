@@ -4,6 +4,7 @@ import CoordSpec as CS
 import NiveauSpec as NS
 
 import LemmingsSpec as LS
+import EtatSpec as ES
 
 main :: IO ()
 main = hspec $ do
@@ -25,3 +26,5 @@ main = hspec $ do
     LS.initLemmingCreuseur 
     LS.initLemmingTombeur 
     LS.initLemmingConstructeur 
+    ES.initEtat
+    ES.tourEtatSpec
