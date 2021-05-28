@@ -49,4 +49,4 @@ Pour modifier le comportement d'un *lemming*, faites un click de souris dessus e
 
 ## Compte rendu du projet
 
-Vous trouverez le rapport du projet dans le dossier `./Rapport` accessible [ici] (./Rapport)
+Vous trouverez le rapport du projet dans le dossier `./Rapport` accessible [ici] (./https://gitlab.com/SofianeBelkhir/lemmings/-/tree/master/Rapport).
